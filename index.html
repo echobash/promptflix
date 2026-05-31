@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PromptFlix — The Netflix of Prompts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber: #F59E0B;
+      --amber-dim: #D97706;
+      --amber-glow: rgba(245,158,11,0.15);
+      --indigo: #4F46E5;
+      --indigo-soft: rgba(79,70,229,0.12);
+      --bg: #080810;
+      --bg2: #0e0e1a;
+      --bg3: #16162a;
+      --text: #EEF0FF;
+      --muted: #6B6B8A;
+      --border: #1e1e38;
+      --border-soft: #252542;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Instrument Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* Grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9000;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)'/%3E%3C/svg%3E");
+    }
+
+    /* --- NAV --- */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      padding: 1.4rem 5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(8,8,16,0.98) 0%, transparent 100%);
+      backdrop-filter: blur(0px);
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.6rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .logo em {
+      font-style: normal;
+      color: var(--amber);
+      position: relative;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 2.5rem; }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 400;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--text); }
+
+    .btn-cta {
+      background: var(--amber);
+      color: #080810 !important;
+      padding: 0.55rem 1.3rem;
+      border-radius: 6px;
+      font-weight: 600 !important;
+      font-size: 0.82rem !important;
+      letter-spacing: 0.03em !important;
+      transition: background 0.2s, transform 0.2s !important;
+      text-transform: none !important;
+    }
+    .btn-cta:hover { background: var(--amber-dim) !important; transform: translateY(-1px); }
+
+    /* --- HERO --- */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 9rem 2rem 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Mesh background */
+    .hero-mesh {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 35%, rgba(79,70,229,0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 35% at 75% 70%, rgba(245,158,11,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse 30% 30% at 20% 60%, rgba(79,70,229,0.07) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    /* Floating orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 500px; height: 500px; background: rgba(79,70,229,0.12); top: -100px; left: -100px; }
+    .orb-2 { width: 350px; height: 350px; background: rgba(245,158,11,0.08); bottom: 0; right: -50px; animation-delay: -4s; }
+    .orb-3 { width: 250px; height: 250px; background: rgba(79,70,229,0.09); bottom: 100px; left: 30%; animation-delay: -8s; }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(30px, 20px) scale(1.05); }
+    }
+
+    /* Grid lines */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,70,229,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,70,229,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 80%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.25);
+      color: var(--amber);
+      padding: 0.45rem 1.1rem;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 2.2rem;
+      animation: fadeUp 0.6s ease both;
+      position: relative;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: livepulse 2s ease infinite;
+    }
+
+    @keyframes livepulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.6); }
+      50% { box-shadow: 0 0 0 6px rgba(245,158,11,0); }
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(3.5rem, 10vw, 8.5rem);
+      line-height: 0.92;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      animation: fadeUp 0.7s 0.1s ease both;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 .line2 {
+      display: block;
+      color: transparent;
+      -webkit-text-stroke: 1.5px rgba(238,240,255,0.25);
+    }
+
+    h1 .highlight {
+      color: var(--amber);
+      position: relative;
+    }
+
+    .tagline {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--muted);
+      margin-top: 1.8rem;
+      font-weight: 300;
+      max-width: 520px;
+      line-height: 1.7;
+      animation: fadeUp 0.7s 0.2s ease both;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tagline strong { color: var(--text); font-weight: 500; }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2.8rem;
+      animation: fadeUp 0.7s 0.3s ease both;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-primary {
+      background: var(--amber);
+      color: #080810;
+      padding: 0.9rem 2.4rem;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      display: inline-block;
+      letter-spacing: 0.01em;
+    }
+    .btn-primary:hover {
+      background: var(--amber-dim);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(245,158,11,0.25);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      padding: 0.9rem 2.4rem;
+      border: 1px solid var(--border-soft);
+      border-radius: 8px;
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 400;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-ghost:hover { border-color: var(--muted); transform: translateY(-2px); }
+
+    /* --- STATS --- */
+    .stats {
+      display: flex;
+      gap: 0;
+      margin-top: 5rem;
+      animation: fadeUp 0.7s 0.4s ease both;
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(14,14,26,0.7);
+      backdrop-filter: blur(12px);
+      overflow: hidden;
+    }
+
+    .stat {
+      padding: 1.5rem 2.5rem;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      flex: 1;
+    }
+    .stat:last-child { border-right: none; }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 2rem;
+      color: var(--text);
+      line-height: 1;
+    }
+    .stat-num span { color: var(--amber); }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.3rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* --- MARQUEE --- */
+    .marquee-wrap {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      background: var(--bg2);
+      margin-top: 5rem;
+    }
+
+    .marquee-track {
+      display: flex;
+      gap: 0;
+      animation: marquee 30s linear infinite;
+      width: max-content;
+    }
+
+    .marquee-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .marquee-sep { color: var(--amber); opacity: 0.5; font-size: 0.5rem; }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* --- SECTION BASE --- */
+    .section-wrap {
+      padding: 7rem 5rem;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .section-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--amber);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-eyebrow::before { content: '//'; opacity: 0.5; }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.8rem;
+    }
+
+    .section-sub {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 3.5rem;
+      max-width: 480px;
+      line-height: 1.7;
+    }
+
+    /* --- CATEGORY GRID --- */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .cat-card {
+      background: var(--bg2);
+      padding: 2rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cat-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--amber-glow);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .cat-card:hover { background: var(--bg3); }
+    .cat-card:hover::after { opacity: 1; }
+
+    .cat-icon { font-size: 1.6rem; margin-bottom: 1rem; display: block; }
+    .cat-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      margin-bottom: 0.35rem;
+      position: relative; z-index: 1;
+    }
+    .cat-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      position: relative; z-index: 1;
+    }
+
+    /* --- PROMPT CARDS --- */
+    .prompt-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+    }
+
+    .prompt-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.6rem;
+      cursor: pointer;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .prompt-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--amber), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .prompt-card:hover {
+      border-color: rgba(245,158,11,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+    .prompt-card:hover::before { opacity: 1; }
+
+    .prompt-role {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--amber);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .prompt-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .prompt-preview {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.7;
+      font-family: 'JetBrains Mono', monospace;
+      border-left: 2px solid var(--border-soft);
+      padding-left: 0.8rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .prompt-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.2rem;
+    }
+
+    .prompt-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+    .tag {
+      font-size: 0.62rem;
+      padding: 0.2rem 0.55rem;
+      background: var(--bg3);
+      border: 1px solid var(--border-soft);
+      border-radius: 4px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: 1px solid var(--border-soft);
+      color: var(--muted);
+      font-size: 0.65rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      transition: border-color 0.2s, color 0.2s;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { color: var(--amber); border-color: var(--amber); }
+
+    /* --- ROLES --- */
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .role-pill {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: var(--muted);
+    }
+    .role-pill:hover { border-color: rgba(245,158,11,0.35); background: var(--bg3); color: var(--text); }
+    .role-pill .role-emoji { display: block; font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+    /* --- HOW IT WORKS --- */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .step {
+      padding: 2rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      position: relative;
+    }
+
+    .step-num {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 3rem;
+      color: var(--border-soft);
+      line-height: 1;
+      margin-bottom: 1rem;
+      letter-spacing: -0.05em;
+    }
+
+    .step-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .step-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* --- NOTIFY --- */
+    .notify-wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 5rem 7rem;
+    }
+
+    .notify-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 5rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .notify-box::before {
+      content: '';
+      position: absolute;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 700px; height: 400px;
+      background: radial-gradient(ellipse, rgba(79,70,229,0.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .notify-box::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; right: -100px;
+      width: 400px; height: 300px;
+      background: radial-gradient(ellipse, rgba(245,158,11,0.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .notify-box h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+      position: relative; z-index: 1;
+    }
+
+    .notify-box h2 span { color: var(--amber); }
+
+    .notify-box p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      max-width: 460px;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative; z-index: 1;
+    }
+
+    .email-form {
+      display: flex;
+      gap: 0;
+      max-width: 420px;
+      margin: 0 auto;
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative; z-index: 1;
+      background: var(--bg3);
+    }
+
+    .email-form input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      padding: 0.95rem 1.3rem;
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .email-form input::placeholder { color: var(--muted); }
+
+    .email-form button {
+      background: var(--amber);
+      color: #080810;
+      border: none;
+      padding: 0.95rem 1.6rem;
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .email-form button:hover { background: var(--amber-dim); }
+
+    #notify-success {
+      display: none;
+      margin-top: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--amber);
+      letter-spacing: 0.05em;
+      position: relative; z-index: 1;
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    footer .logo { font-size: 1.2rem; }
+    footer p { font-size: 0.78rem; color: var(--muted); }
+    footer a { color: var(--muted); text-decoration: none; font-size: 0.78rem; transition: color 0.2s; }
+    footer a:hover { color: var(--amber); }
+    .footer-links { display: flex; gap: 2rem; }
+
+    /* --- ANIMATIONS --- */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .section-wrap { padding: 5rem 1.5rem; }
+      .notify-wrap { padding: 0 1.5rem 5rem; }
+      .notify-box { padding: 3rem 1.5rem; }
+      footer { padding: 2rem 1.5rem; flex-direction: column; align-items: flex-start; }
+      h1 { font-size: clamp(3rem, 14vw, 5rem); }
+      .cat-grid { grid-template-columns: repeat(2, 1fr); }
+      .prompt-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .stats { flex-direction: column; }
+      .stat { border-right: none; border-bottom: 1px solid var(--border); }
+      .stat:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">Prompt<em>Flix</em></div>
+    <div class="nav-right">
+      <a href="#categories">Categories</a>
+      <a href="#roles">Roles</a>
+      <a href="#notify" class="btn-cta">Get Early Access</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-mesh"></div>
+    <div class="hero-grid"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="hero-badge">
+      <span class="live-dot"></span>
+      Early Access · Launching Soon
+    </div>
+
+    <h1>
+      The Prompt<br>
+      <span class="line2">Library You</span><br>
+      <span class="highlight">Deserved.</span>
+    </h1>
+
+    <p class="tagline">
+      Curated AI prompts for <strong>every role, every tool, every workflow</strong> — 
+      browse, copy, and ship faster. No fluff. Just prompts that work.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#notify" class="btn-primary">Get Early Access →</a>
+      <a href="#categories" class="btn-ghost">Explore Categories</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">500<span>+</span></div>
+        <div class="stat-label">Prompts</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">40<span>+</span></div>
+        <div class="stat-label">Roles</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">15<span>+</span></div>
+        <div class="stat-label">AI Tools</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">Free<span>.</span></div>
+        <div class="stat-label">Always</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span class="marquee-item">ChatGPT <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Claude <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Gemini <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Cursor <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Midjourney <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Perplexity <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Copilot <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Mistral <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Grok <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">v0 <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Bolt <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Lovable <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Windsurf <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Llama <span class="marquee-sep">◆</span></span>
+      <!-- duplicate -->
+      <span class="marquee-item">ChatGPT <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Claude <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Gemini <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Cursor <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Midjourney <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Perplexity <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Copilot <span class="marquue-sep">◆</span></span>
+      <span class="marquee-item">Mistral <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Grok <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">v0 <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Bolt <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Lovable <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Windsurf <span class="marquee-sep">◆</span></span>
+      <span class="marquee-item">Llama <span class="marquee-sep">◆</span></span>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div id="categories" class="section-wrap">
+    <div class="reveal">
+      <div class="section-eyebrow">Browse by category</div>
+      <div class="section-title">Every Workflow.<br>Every Tool.</div>
+      <p class="section-sub">Prompts organized the way you actually think — by what you're trying to do, not by AI model.</p>
+    </div>
+    <div class="cat-grid reveal">
+      <div class="cat-card"><span class="cat-icon">💻</span><div class="cat-name">Engineering</div><div class="cat-count">120+ prompts</div></div>
+      <div class="cat-card"><span class="cat-icon">📈</span><div class="cat-name">Marketing</div><div class="cat-count">80+ prompts</div></div>
+      <div class="cat-card"><span class="cat-icon">🎨</span><div class="cat-name">Design</div><div class="cat-count">60+ prompts</div></div>
+      <div class="cat-card"><span class="cat-icon">📊</span><div class="cat-name">Data & Analytics</div><div class="cat-count">70+ prompts</div></div>
+      <div class="cat-card"><span class="cat-icon">💼</span><div class="cat-name">Sales</div><div class="cat-count">50+ prompts</div></div>
+      <div class="cat-card"><span class="cat-icon">✍️</span><div class="cat-name">Content Writing</div><div class="cat-count">90+ prompts</div></div>
+      <div class="cat-card"><span class="cat-icon">🔐</span><div class="cat-name">Security / VAPT</div><div class="cat-count">40+ prompts</div></div>
+      <div class="cat-card"><span class="cat-icon">🤖</span><div class="cat-name">AI / LLMs</div><div class="cat-count">55+ prompts</div></div>
+      <div class="cat-card"><span class="cat-icon">🧑‍💼</span><div class="cat-name">Product</div><div class="cat-count">45+ prompts</div></div>
+      <div class="cat-card"><span class="cat-icon">📬</span><div class="cat-name">Email & Outreach</div><div class="cat-count">35+ prompts</div></div>
+    </div>
+  </div>
+
+  <!-- FEATURED PROMPTS -->
+  <div class="section-wrap" style="padding-top:0">
+    <div class="reveal">
+      <div class="section-eyebrow">Featured picks</div>
+      <div class="section-title">Trending Now</div>
+      <p class="section-sub">Hand-picked prompts tested across tools and real workflows.</p>
+    </div>
+    <div class="prompt-grid reveal">
+
+      <div class="prompt-card">
+        <div class="prompt-role">Engineering · Code Review</div>
+        <div class="prompt-title">Senior Engineer Code Review</div>
+        <div class="prompt-preview">Review this code as a senior engineer. Flag bugs, suggest refactors, and point out any security concerns with reasoning for each.</div>
+        <div class="prompt-footer">
+          <div class="prompt-tags"><span class="tag">ChatGPT</span><span class="tag">Claude</span><span class="tag">Cursor</span></div>
+          <button class="copy-btn" onclick="copyPrompt(this, 'Review this code as a senior engineer. Flag bugs, suggest refactors, and point out any security concerns with reasoning for each.')">copy</button>
+        </div>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-role">Marketing · Email</div>
+        <div class="prompt-title">High-Converting Product Launch Email</div>
+        <div class="prompt-preview">Write a product launch email with a strong hook, one key benefit, social proof, and a single clear CTA. Keep it under 200 words.</div>
+        <div class="prompt-footer">
+          <div class="prompt-tags"><span class="tag">ChatGPT</span><span class="tag">Gemini</span></div>
+          <button class="copy-btn" onclick="copyPrompt(this, 'Write a product launch email with a strong hook, one key benefit, social proof, and a single clear CTA. Keep it under 200 words.')">copy</button>
+        </div>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-role">Product · Strategy</div>
+        <div class="prompt-title">PRD from a Single Line Idea</div>
+        <div class="prompt-preview">Turn this one-liner into a full PRD: problem statement, user personas, success metrics, scope, and edge cases.</div>
+        <div class="prompt-footer">
+          <div class="prompt-tags"><span class="tag">Claude</span><span class="tag">ChatGPT</span></div>
+          <button class="copy-btn" onclick="copyPrompt(this, 'Turn this one-liner into a full PRD: problem statement, user personas, success metrics, scope, and edge cases.')">copy</button>
+        </div>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-role">Security · VAPT</div>
+        <div class="prompt-title">Threat Model for a Web App</div>
+        <div class="prompt-preview">Generate a threat model using STRIDE for this web application. List attack surfaces, threat actors, and mitigations for each.</div>
+        <div class="prompt-footer">
+          <div class="prompt-tags"><span class="tag">Claude</span><span class="tag">ChatGPT</span></div>
+          <button class="copy-btn" onclick="copyPrompt(this, 'Generate a threat model using STRIDE for this web application. List attack surfaces, threat actors, and mitigations for each.')">copy</button>
+        </div>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-role">Data · SQL</div>
+        <div class="prompt-title">Explain This Query Like I'm Junior</div>
+        <div class="prompt-preview">Explain this SQL query step by step. Break down every clause, what it does, and why it's written this way. Use plain English.</div>
+        <div class="prompt-footer">
+          <div class="prompt-tags"><span class="tag">ChatGPT</span><span class="tag">Gemini</span></div>
+          <button class="copy-btn" onclick="copyPrompt(this, 'Explain this SQL query step by step. Break down every clause, what it does, and why it\'s written this way. Use plain English.')">copy</button>
+        </div>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-role">Design · UX</div>
+        <div class="prompt-title">UX Audit Checklist Generator</div>
+        <div class="prompt-preview">Audit this screen for UX issues. Check clarity, hierarchy, accessibility, and cognitive load. Score each area out of 10 with fixes.</div>
+        <div class="prompt-footer">
+          <div class="prompt-tags"><span class="tag">Claude</span><span class="tag">GPT-4o</span></div>
+          <button class="copy-btn" onclick="copyPrompt(this, 'Audit this screen for UX issues. Check clarity, hierarchy, accessibility, and cognitive load. Score each area out of 10 with fixes.')">copy</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section-wrap" style="padding-top:0">
+    <div class="reveal">
+      <div class="section-eyebrow">How it works</div>
+      <div class="section-title">Simple by Design</div>
+      <p class="section-sub">No accounts. No paywalls. No noise.</p>
+    </div>
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Browse by role or category</div>
+        <div class="step-desc">Filter prompts by your job function, the AI tool you use, or the kind of task you want to do.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Copy in one click</div>
+        <div class="step-desc">Every prompt is ready to paste. No editing required — though you can tweak variables marked in brackets.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Ship faster</div>
+        <div class="step-desc">Stop spending 20 minutes writing prompts. Use PromptFlix and spend that time on work that matters.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROLES -->
+  <div id="roles" class="section-wrap" style="padding-top:0">
+    <div class="reveal">
+      <div class="section-eyebrow">Browse by role</div>
+      <div class="section-title">Built For<br>Your Role</div>
+      <p class="section-sub">Every prompt is tagged by job function. You only see what's relevant to you.</p>
+    </div>
+    <div class="roles-grid reveal">
+      <div class="role-pill"><span class="role-emoji">👨‍💻</span>Backend Dev</div>
+      <div class="role-pill"><span class="role-emoji">🎨</span>UI Designer</div>
+      <div class="role-pill"><span class="role-emoji">📊</span>Data Analyst</div>
+      <div class="role-pill"><span class="role-emoji">🚀</span>Product Manager</div>
+      <div class="role-pill"><span class="role-emoji">📣</span>Marketer</div>
+      <div class="role-pill"><span class="role-emoji">✍️</span>Content Writer</div>
+      <div class="role-pill"><span class="role-emoji">🔐</span>Security Eng</div>
+      <div class="role-pill"><span class="role-emoji">💼</span>Sales Rep</div>
+      <div class="role-pill"><span class="role-emoji">🤖</span>AI Engineer</div>
+      <div class="role-pill"><span class="role-emoji">🧑‍🏫</span>Educator</div>
+      <div class="role-pill"><span class="role-emoji">🏗️</span>DevOps / Infra</div>
+      <div class="role-pill"><span class="role-emoji">🧑‍💼</span>Founder / CEO</div>
+    </div>
+  </div>
+
+  <!-- NOTIFY -->
+  <div id="notify" class="notify-wrap">
+    <div class="notify-box reveal">
+      <div class="section-eyebrow" style="justify-content:center">Early access</div>
+      <h2>Be First.<br><span>Get 50 Free Prompts.</span></h2>
+      <p>Drop your email and get early access to PromptFlix — plus a curated pack of 50 prompts delivered on launch day.</p>
+      <div class="email-form">
+        <input type="email" placeholder="you@example.com" id="emailInput" />
+        <button onclick="handleNotify()">Notify Me</button>
+      </div>
+      <div id="notify-success">✓ you're on the list — see you at launch</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="logo">Prompt<em>Flix</em></div>
+    <p>built by <a href="https://echobash.com" target="_blank">echobash</a> · promptflix.in</p>
+    <div class="footer-links">
+      <a href="https://twitter.com/alianwar_rocker" target="_blank">Twitter</a>
+      <a href="https://github.com/echobash" target="_blank">GitHub</a>
+      <a href="https://devdunia.com" target="_blank">DevDunia</a>
+      <a href="https://laravellog.com" target="_blank">LaravelLog</a>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 100);
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Copy prompt
+    function copyPrompt(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'copied ✓';
+        btn.style.color = 'var(--amber)';
+        btn.style.borderColor = 'var(--amber)';
+        setTimeout(() => {
+          btn.textContent = 'copy';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }, 2000);
+      });
+    }
+
+    // Notify
+    function handleNotify() {
+      const input = document.getElementById('emailInput');
+      if (!input.value || !input.value.includes('@')) {
+        input.style.borderColor = 'rgba(245,158,11,0.5)';
+        setTimeout(() => input.style.borderColor = '', 1000);
+        return;
+      }
+      input.value = '';
+      document.getElementById('notify-success').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
