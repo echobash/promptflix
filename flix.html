@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>promptflix.in — The right prompt for the right person, instantly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:        #0a0b16;
+    --bg-2:      #0d0e1d;
+    --surface:   rgba(255,255,255,0.035);
+    --surface-2: rgba(255,255,255,0.06);
+    --stroke:    rgba(255,255,255,0.09);
+    --stroke-2:  rgba(255,255,255,0.16);
+    --text:      #ECEDF6;
+    --muted:     #9A9CB8;
+    --faint:     #686A8A;
+    --a1:        #7C5CFF;
+    --a1-rgb:    124,92,255;
+    --a-mid:     #5B6BFF;
+    --a2:        #22D3EE;
+    --a2-rgb:    34,211,238;
+    --violet:    var(--a1);
+    --indigo:    var(--a-mid);
+    --cyan:      var(--a2);
+    --aurora:    linear-gradient(115deg, var(--a1) 0%, var(--a-mid) 42%, var(--a2) 100%);
+    --aurora-soft: linear-gradient(115deg, rgba(var(--a1-rgb),0.18), rgba(var(--a2-rgb),0.14));
+    --radius:    18px;
+    --maxw:      1280px;
+  }
+
+  /* ── THEMES (accent swap) ── */
+  [data-theme="cinema"]  { --a1:#E11D2A; --a1-rgb:225,29,42; --a-mid:#B00C1E; --a2:#FF4242; --a2-rgb:255,66,66;
+                           --bg:#0a0708; --bg-2:#0d090a; }
+  [data-theme="sunset"]  { --a1:#FF5E7E; --a1-rgb:255,94,126; --a-mid:#FF7A5C; --a2:#FFB24D; --a2-rgb:255,178,77; }
+  [data-theme="emerald"] { --a1:#19D58E; --a1-rgb:25,213,142; --a-mid:#16C7B4; --a2:#22D3EE; --a2-rgb:34,211,238; }
+  [data-theme="rose"]    { --a1:#FF5EC4; --a1-rgb:255,94,196; --a-mid:#C95CE0; --a2:#9A7CFF; --a2-rgb:154,124,255; }
+  [data-theme="ocean"]   { --a1:#3B82F6; --a1-rgb:59,130,246; --a-mid:#4F9DF7; --a2:#22D3EE; --a2-rgb:34,211,238; }
+
+  /* ── SHIMMER ── */
+  @keyframes textShimmer { to { background-position: 200% center; } }
+  @keyframes cardShimmer { from { background-position: 160% 0; } to { background-position: -60% 0; } }
+  @keyframes btnShimmer  { 0% { left:-70%; } 55%,100% { left:140%; } }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
+  ::selection { background: rgba(var(--a1-rgb),0.4); color: #fff; }
+
+  /* ambient aurora field */
+  .aurora-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .aurora-bg .blob {
+    position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5;
+  }
+  .blob.b1 { width: 620px; height: 620px; top: -240px; left: -120px;
+    background: radial-gradient(circle, rgba(var(--a1-rgb),0.55), transparent 65%); }
+  .blob.b2 { width: 540px; height: 540px; top: -120px; right: -160px;
+    background: radial-gradient(circle, rgba(var(--a2-rgb),0.4), transparent 65%); }
+  .blob.b3 { width: 480px; height: 480px; top: 420px; left: 38%;
+    background: radial-gradient(circle, rgba(var(--a1-rgb),0.3), transparent 68%); }
+  .grain {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.45;
+    background-image: radial-gradient(rgba(255,255,255,0.18) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    mix-blend-mode: overlay;
+  }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+  main, nav, footer { position: relative; z-index: 2; }
+
+  /* ───────────────────────── NAV ───────────────────────── */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    background: rgba(10,11,22,0.55);
+    border-bottom: 1px solid transparent;
+    transition: border-color .3s, background .3s;
+  }
+  nav.scrolled { border-bottom-color: var(--stroke); background: rgba(10,11,22,0.82); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 70px; }
+  .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+  .brand .mark {
+    width: 30px; height: 30px; border-radius: 9px; background: var(--aurora);
+    position: relative; box-shadow: 0 4px 22px rgba(var(--a1-rgb),0.5);
+  }
+  .brand .mark::after {
+    content: ''; position: absolute; inset: 7px 11px; border-radius: 2px;
+    border-left: 3px solid #fff; border-bottom: 3px solid #fff;
+    border-bottom-right-radius: 4px; opacity: 0.95;
+  }
+  .brand .name { font-weight: 800; font-size: 21px; letter-spacing: -0.02em; color: #fff; }
+  .brand .name .tld { background: var(--aurora); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: textShimmer 7s linear infinite; }
+  .nav-links { display: flex; align-items: center; gap: 34px; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14.5px; font-weight: 500; transition: color .2s; }
+  .nav-links a:hover { color: #fff; }
+  .btn {
+    font-family: inherit; font-weight: 600; cursor: pointer; border: none;
+    border-radius: 11px; transition: transform .15s ease, box-shadow .25s, background .25s;
+    display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--aurora); color: #fff; padding: 11px 20px; font-size: 14.5px;
+    box-shadow: 0 6px 26px rgba(var(--a1-rgb),0.42);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 34px rgba(var(--a1-rgb),0.6); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary { position: relative; overflow: hidden; }
+  .btn-primary::after {
+    content:''; position:absolute; top:0; left:-70%; width:45%; height:100%; pointer-events:none; z-index:0;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,0.3), transparent);
+    transform: skewX(-22deg); animation: btnShimmer 4.2s ease-in-out infinite;
+  }
+  .btn-primary > * { position: relative; z-index: 1; }
+  .nav-cta { padding: 9px 18px; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .theme-switch { display: flex; align-items: center; gap: 8px; padding-right: 4px; }
+  .theme-switch button {
+    width: 22px; height: 22px; border-radius: 50%; cursor: pointer; padding: 0;
+    border: 2px solid transparent; background: transparent; position: relative; transition: transform .16s;
+  }
+  .theme-switch button .sw {
+    position: absolute; inset: 2px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+  }
+  .theme-switch button:hover { transform: scale(1.15); }
+  .theme-switch button.active { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.18); }
+
+  /* ───────────────────────── HERO ───────────────────────── */
+  header.hero { padding: 92px 0 70px; text-align: center; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 9px; margin-bottom: 30px;
+    padding: 7px 15px 7px 11px; border-radius: 100px; font-size: 13px; font-weight: 500;
+    background: var(--surface); border: 1px solid var(--stroke); color: var(--muted);
+  }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan);
+    box-shadow: 0 0 0 4px rgba(var(--a2-rgb),0.18); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(var(--a2-rgb),0); } }
+  .pill b { color: var(--text); font-weight: 600; }
+
+  h1.headline {
+    font-size: clamp(42px, 6.6vw, 86px); font-weight: 900; letter-spacing: -0.035em;
+    line-height: 0.98; margin: 0 auto 26px; max-width: 16ch; color: #fff;
+  }
+  h1.headline .grad { background: var(--aurora); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: textShimmer 6s linear infinite; }
+  .sub {
+    font-size: clamp(17px, 2vw, 21px); color: var(--muted); max-width: 60ch; margin: 0 auto 14px;
+    font-weight: 400;
+  }
+  .subsub { font-size: 15.5px; color: var(--faint); max-width: 56ch; margin: 0 auto 40px; }
+
+  /* search */
+  .search-wrap { max-width: 660px; margin: 0 auto 22px; position: relative; }
+  .search-bar {
+    display: flex; align-items: center; gap: 4px; padding: 8px 8px 8px 20px;
+    background: var(--surface-2); border: 1px solid var(--stroke-2); border-radius: 16px;
+    backdrop-filter: blur(12px); transition: border-color .25s, box-shadow .25s;
+  }
+  .search-bar:focus-within { border-color: rgba(var(--a1-rgb),0.6); box-shadow: 0 0 0 4px rgba(var(--a1-rgb),0.16), 0 16px 50px rgba(0,0,0,0.4); }
+  .search-bar svg { flex: none; color: var(--faint); }
+  .search-bar input {
+    flex: 1; background: none; border: none; outline: none; color: var(--text);
+    font-family: inherit; font-size: 16px; padding: 10px 4px;
+  }
+  .search-bar input::placeholder { color: var(--faint); }
+  .search-bar .btn-primary { padding: 12px 22px; }
+  .hint { font-size: 13px; color: var(--faint); }
+  .hint b { color: var(--muted); font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; margin-top: 22px; }
+  .chip {
+    font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer;
+    padding: 7px 14px; border-radius: 100px; background: var(--surface); border: 1px solid var(--stroke);
+    transition: all .18s;
+  }
+  .chip:hover { color: #fff; border-color: var(--stroke-2); background: var(--surface-2); }
+  .chip.active { color: #fff; background: var(--aurora-soft); border-color: rgba(var(--a1-rgb),0.5); }
+
+  /* ───────────────────────── ROLE ROWS ───────────────────────── */
+  .rows-section { padding: 46px 0 30px; }
+  .no-results { text-align: center; color: var(--faint); padding: 60px 0; font-size: 16px; display: none; }
+  .row { margin-bottom: 50px; }
+  .row-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 18px; padding: 0 28px; max-width: var(--maxw); margin-left:auto; margin-right:auto; }
+  .row-head h2 { font-size: 23px; font-weight: 800; letter-spacing: -0.02em; color: #fff; display:flex; align-items:center; gap:11px; }
+  .row-head .emoji { font-size: 21px; }
+  .row-head .count { font-size: 13px; color: var(--faint); font-weight: 500; }
+  .row-head .trend {
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.02em; color: #ffd9a8;
+    padding: 4px 10px; border-radius: 100px; background: linear-gradient(115deg, rgba(255,138,91,0.22), rgba(245,197,66,0.18));
+    border: 1px solid rgba(255,138,91,0.4); margin-left: 2px;
+  }
+  .row-head .arrows { margin-left: auto; display: flex; gap: 8px; }
+  .arrows button {
+    width: 36px; height: 36px; border-radius: 10px; background: var(--surface); border: 1px solid var(--stroke);
+    color: var(--muted); cursor: pointer; display: grid; place-items: center; transition: all .18s;
+  }
+  .arrows button:hover { color: #fff; background: var(--surface-2); border-color: var(--stroke-2); }
+  .arrows button:disabled { opacity: 0.3; cursor: default; }
+
+  .track-mask { position: relative; }
+  .track {
+    display: flex; gap: 18px; overflow-x: auto; scroll-behavior: smooth;
+    padding: 6px 28px 16px; max-width: var(--maxw); margin: 0 auto;
+    scrollbar-width: none;
+  }
+  .track::-webkit-scrollbar { display: none; }
+
+  /* ───────────────────────── PROMPT CARD ───────────────────────── */
+  .card {
+    flex: 0 0 340px; width: 340px; min-height: 252px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.022));
+    border: 1px solid var(--stroke); border-radius: var(--radius);
+    padding: 20px; display: flex; flex-direction: column;
+    position: relative; overflow: hidden; cursor: pointer;
+    transition: transform .28s cubic-bezier(.2,.7,.3,1), border-color .28s, box-shadow .28s;
+  }
+  .card::before {
+    content: ''; position: absolute; inset: 0; border-radius: var(--radius);
+    background: radial-gradient(420px circle at var(--mx,50%) var(--my,0%), rgba(var(--a1-rgb),0.16), transparent 60%);
+    opacity: 0; transition: opacity .3s; pointer-events: none;
+  }
+  .card:hover { transform: translateY(-6px); border-color: rgba(var(--a1-rgb),0.45);
+    box-shadow: 0 22px 60px -20px rgba(var(--a1-rgb),0.4), 0 0 0 1px rgba(var(--a1-rgb),0.1); }
+  .card:hover::before { opacity: 1; }
+  .card::after {
+    content:''; position:absolute; inset:0; border-radius:var(--radius); pointer-events:none; z-index:2;
+    background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.13) 50%, transparent 65%);
+    background-size: 220% 100%; background-position: 160% 0; opacity:0; transition:opacity .25s;
+  }
+  .card:hover::after { opacity:1; animation: cardShimmer 1.05s ease-out; }
+
+  /* card preview thumbnail — generative interactive SVG */
+  .card-thumb { width: 100%; height: 152px; margin-bottom: 15px; border-radius: 13px; overflow: hidden; position: relative; z-index: 1;
+    background: linear-gradient(160deg, rgba(var(--a1-rgb),0.14), rgba(var(--a2-rgb),0.05)); cursor: pointer; }
+  .art { display: block; width: 100%; height: 100%; }
+  .art-bg { fill: rgba(255,255,255,0.014); }
+  .gs1a { stop-color: var(--a1); stop-opacity: .55; }
+  .gs0a { stop-color: var(--a1); stop-opacity: 0; }
+  .gs1b { stop-color: var(--a2); stop-opacity: .5; }
+  .gs0b { stop-color: var(--a2); stop-opacity: 0; }
+  .art-parallax { transition: transform .25s cubic-bezier(.2,.7,.3,1); }
+  .blob { animation: blobFloat ease-in-out infinite alternate; will-change: transform; }
+  @keyframes blobFloat { to { transform: translate(var(--dx,0), var(--dy,0)); } }
+  .star { fill: #fff; animation: twinkle 3s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100% { opacity:.18; } 50% { opacity:.8; } }
+  .art-line { fill: none; stroke: var(--a2); stroke-width: .8; stroke-opacity: .26; stroke-linejoin: round; }
+  .art-node { fill: var(--a2); opacity: .85; animation: twinkle 2.6s ease-in-out infinite; }
+  .art-ring { fill: none; stroke: var(--a1); stroke-width: 1.5; stroke-dasharray: 5 7; stroke-opacity: .55; animation: ringSpin 22s linear infinite; transition: stroke-opacity .3s; }
+  @keyframes ringSpin { to { transform: rotate(360deg); } }
+  .art-diamond { fill: none; stroke: var(--a2); stroke-width: 1.4; stroke-opacity: .5; animation: ringSpin 16s linear infinite reverse; transition: stroke-opacity .3s; }
+  .card-thumb:hover .art-ring, .card-thumb:hover .art-diamond, .modal-preview:hover .art-ring, .modal-preview:hover .art-diamond { stroke-opacity: .95; }
+
+  .thumb-emoji { position: absolute; top: 12px; right: 16px; font-size: 50px; line-height: 1; opacity: .2;
+    pointer-events: none; animation: floatY 6s ease-in-out infinite; transition: opacity .3s, filter .3s; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+  @keyframes floatY { 50% { transform: translateY(-6px); } }
+  .card-thumb:hover .thumb-emoji, .modal-preview:hover .thumb-emoji { opacity: .42; }
+  .thumb-label { position: absolute; left: 15px; bottom: 12px; right: 15px; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; line-height: 1.4; color: rgba(255,255,255,0.85); text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+    pointer-events: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .thumb-label::before { content: '◆ '; color: var(--a2); opacity: .9; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob, .star, .art-node, .art-ring, .art-diamond, .thumb-emoji { animation: none; }
+  }
+
+  .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600;
+    padding: 5px 11px; border-radius: 100px; background: var(--aurora-soft);
+    border: 1px solid rgba(var(--a1-rgb),0.3); color: rgba(255,255,255,0.92);
+  }
+  .badge .bdot { width: 6px; height: 6px; border-radius: 50%; background: var(--violet); }
+  .save { color: var(--faint); cursor: pointer; transition: color .18s; background:none;border:none; display:grid;place-items:center; }
+  .save:hover { color: var(--cyan); }
+
+  .card h3 { font-size: 17px; font-weight: 700; color: #fff; letter-spacing: -0.01em; margin-bottom: 9px; line-height: 1.25; }
+  .prompt-text {
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.55; color: var(--muted);
+    background: rgba(0,0,0,0.28); border: 1px solid var(--stroke); border-radius: 11px;
+    padding: 12px 13px; flex: 1; overflow: hidden; position: relative; margin-bottom: 14px;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
+  .card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .ai-tags { display: flex; gap: 6px; }
+  .ai-tag {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted);
+    padding: 4px 8px; border-radius: 7px; background: var(--surface); border: 1px solid var(--stroke);
+  }
+  .copy-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    padding: 9px 14px; border-radius: 10px; color: #fff; border: 1px solid rgba(var(--a1-rgb),0.4);
+    background: rgba(var(--a1-rgb),0.16); display: inline-flex; align-items: center; gap: 7px;
+    transition: all .18s;
+  }
+  .copy-btn:hover { background: rgba(var(--a1-rgb),0.3); border-color: rgba(var(--a1-rgb),0.7); }
+  .copy-btn.done { background: rgba(var(--a2-rgb),0.18); border-color: rgba(var(--a2-rgb),0.5); color: #aef2fb; }
+
+  /* ───────────────────────── WHY ───────────────────────── */
+  .why { padding: 80px 0 70px; }
+  .section-tag { text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--violet); margin-bottom: 14px; }
+  .section-title { text-align: center; font-size: clamp(30px, 4vw, 46px); font-weight: 900; letter-spacing: -0.03em; color: #fff; margin-bottom: 12px; }
+  .section-lead { text-align: center; color: var(--muted); font-size: 17px; max-width: 52ch; margin: 0 auto 52px; }
+  .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .why-card {
+    background: linear-gradient(160deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));
+    border: 1px solid var(--stroke); border-radius: 22px; padding: 34px 30px;
+    transition: transform .28s, border-color .28s; position: relative; overflow: hidden;
+  }
+  .why-card:hover { transform: translateY(-6px); border-color: rgba(var(--a1-rgb),0.4); }
+  .why-icon {
+    width: 54px; height: 54px; border-radius: 15px; display: grid; place-items: center;
+    background: var(--aurora-soft); border: 1px solid rgba(var(--a1-rgb),0.3); color: #fff; margin-bottom: 22px;
+  }
+  .why-card h3 { font-size: 21px; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 11px; }
+  .why-card p { color: var(--muted); font-size: 15.5px; line-height: 1.6; }
+  .why-card .big { position: absolute; top: 20px; right: 26px; font-size: 56px; font-weight: 900;
+    color: rgba(255,255,255,0.04); letter-spacing: -0.04em; }
+
+  /* CTA band */
+  .cta-band { padding: 0 0 90px; }
+  .cta-inner {
+    background: var(--aurora-soft); border: 1px solid rgba(var(--a1-rgb),0.3); border-radius: 28px;
+    padding: 60px 40px; text-align: center; position: relative; overflow: hidden;
+  }
+  .cta-inner::after {
+    content:''; position:absolute; width:500px; height:500px; border-radius:50%; top:-300px; left:50%; transform:translateX(-50%);
+    background: radial-gradient(circle, rgba(var(--a2-rgb),0.3), transparent 65%); filter: blur(40px);
+  }
+  .cta-inner h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 900; letter-spacing:-0.03em; color:#fff; margin-bottom: 14px; position:relative; }
+  .cta-inner p { color: var(--muted); font-size: 17px; margin-bottom: 30px; position:relative; }
+  .cta-inner .btn-primary { font-size: 16px; padding: 15px 30px; position:relative; }
+
+  /* ───────────────────────── FOOTER ───────────────────────── */
+  footer { border-top: 1px solid var(--stroke); padding: 56px 0 40px; }
+  .foot-grid { display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; margin-bottom: 44px; }
+  .foot-brand { max-width: 320px; }
+  .foot-brand .sub { text-align: left; margin: 16px 0 0; font-size: 15px; color: var(--muted); }
+  .foot-cols { display: flex; gap: 64px; flex-wrap: wrap; }
+  .foot-col h4 { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); margin-bottom: 16px; }
+  .foot-col a { display: block; color: var(--muted); text-decoration: none; font-size: 14.5px; margin-bottom: 11px; transition: color .18s; }
+  .foot-col a:hover { color: #fff; }
+  .foot-bottom { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
+    padding-top: 26px; border-top: 1px solid var(--stroke); }
+  .foot-bottom p { color: var(--faint); font-size: 13.5px; }
+  .socials { display: flex; gap: 10px; }
+  .socials a { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+    background: var(--surface); border: 1px solid var(--stroke); color: var(--muted); transition: all .18s; }
+  .socials a:hover { color: #fff; border-color: rgba(var(--a1-rgb),0.5); background: var(--surface-2); }
+
+  /* ───────────────────────── MODAL ───────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center;
+    padding: 24px; background: rgba(6,7,16,0.65); backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+    opacity: 0; visibility: hidden; transition: opacity .38s ease, visibility .38s;
+  }
+  .modal-overlay.open { opacity: 1; visibility: visible; }
+  .modal-panel {
+    position: relative; width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto;
+    background: linear-gradient(165deg, #15172b 0%, #101124 100%);
+    border: 1px solid var(--stroke-2); border-radius: 26px; padding: 32px;
+    box-shadow: 0 40px 120px -30px rgba(0,0,0,0.8), 0 0 0 1px rgba(var(--a1-rgb),0.08);
+    transform: translateY(40px) scale(0.94); opacity: 0;
+    transition: transform .46s cubic-bezier(.22,1.1,.32,1), opacity .34s ease;
+    scrollbar-width: thin;
+  }
+  .modal-overlay.open .modal-panel { transform: translateY(0) scale(1); opacity: 1; }
+  .modal-panel::-webkit-scrollbar { width: 8px; }
+  .modal-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 8px; }
+  .modal-glow {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 80%; height: 160px; pointer-events: none; border-radius: 50%;
+    background: radial-gradient(ellipse at top, rgba(var(--a1-rgb),0.4), transparent 70%); filter: blur(20px);
+  }
+  .modal-close {
+    position: absolute; top: 18px; right: 18px; width: 38px; height: 38px; z-index: 3;
+    border-radius: 11px; background: var(--surface); border: 1px solid var(--stroke); color: var(--muted);
+    cursor: pointer; display: grid; place-items: center; transition: all .18s;
+  }
+  .modal-close:hover { color: #fff; background: var(--surface-2); border-color: var(--stroke-2); transform: rotate(90deg); }
+  .modal-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; position: relative; }
+  .m-trend {
+    font-size: 11.5px; font-weight: 700; color: #ffd9a8; padding: 4px 10px; border-radius: 100px;
+    background: linear-gradient(115deg, rgba(255,138,91,0.22), rgba(245,197,66,0.18)); border: 1px solid rgba(255,138,91,0.4);
+  }
+  .modal-title { font-size: 27px; font-weight: 800; letter-spacing: -0.025em; color: #fff; line-height: 1.15; margin-bottom: 22px; padding-right: 30px; position: relative; }
+  .modal-preview { width: 100%; height: 220px; margin-bottom: 22px; border-radius: 16px; overflow: hidden; position: relative;
+    background: linear-gradient(160deg, rgba(var(--a1-rgb),0.16), rgba(var(--a2-rgb),0.06)); }
+  .modal-preview:empty { display: none; }
+  .modal-preview .thumb-emoji { font-size: 80px; top: 20px; right: 26px; }
+  .modal-label { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+  .modal-prompt {
+    width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.65; color: var(--text);
+    background: rgba(0,0,0,0.32); border: 1px solid var(--stroke); border-radius: 14px; padding: 16px 17px;
+    resize: none; outline: none; transition: border-color .22s, box-shadow .22s, background .22s; overflow: hidden;
+  }
+  .modal-prompt[readonly] { cursor: default; }
+  .modal-prompt.editing {
+    border-color: rgba(var(--a1-rgb),0.6); box-shadow: 0 0 0 4px rgba(var(--a1-rgb),0.15);
+    background: rgba(var(--a1-rgb),0.06); cursor: text;
+  }
+  .modal-note { font-size: 13px; color: var(--faint); margin: 12px 2px 0; display: flex; align-items: center; gap: 7px; }
+  .modal-ai { display: flex; align-items: center; gap: 12px; margin: 22px 0 26px; flex-wrap: wrap; }
+  .m-ai-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .modal-actions { display: flex; gap: 12px; }
+  .btn-ghost {
+    font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; flex: none;
+    padding: 13px 22px; border-radius: 12px; color: var(--text); background: var(--surface-2);
+    border: 1px solid var(--stroke-2); display: inline-flex; align-items: center; gap: 8px; transition: all .18s;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.24); }
+  .btn-ghost.active { color: #fff; background: rgba(var(--a1-rgb),0.16); border-color: rgba(var(--a1-rgb),0.5); }
+  .modal-copy { flex: 1; justify-content: center; font-size: 15px; padding: 13px 22px; }
+  .modal-copy.done { background: var(--aurora); box-shadow: 0 6px 26px rgba(var(--a2-rgb),0.42); }
+
+  /* ───────────────────────── TOAST ───────────────────────── */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(120px);
+    background: rgba(20,22,40,0.95); border: 1px solid rgba(var(--a2-rgb),0.4); color: #fff;
+    padding: 13px 22px; border-radius: 13px; font-size: 14.5px; font-weight: 600; z-index: 100;
+    display: flex; align-items: center; gap: 10px; backdrop-filter: blur(12px);
+    box-shadow: 0 16px 50px rgba(0,0,0,0.5); transition: transform .4s cubic-bezier(.2,.9,.3,1.2);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast svg { color: var(--cyan); }
+
+  /* reveal animation */
+  .reveal { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.3,1); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    html { scroll-behavior: auto; }
+    .btn-primary::after, .card:hover::after, h1.headline .grad, .brand .name .tld, .pill .dot { animation: none; }
+  }
+
+  /* responsive */
+  @media (max-width: 860px) {
+    .nav-links { display: none; }
+    .why-grid { grid-template-columns: 1fr; }
+    header.hero { padding: 60px 0 50px; }
+    .card { flex-basis: 290px; width: 290px; }
+    .search-bar .btn-primary span { display: none; }
+    .search-bar .btn-primary { padding: 12px 14px; }
+  }
+  @media (max-width: 540px) {
+    .wrap { padding: 0 18px; }
+    .row-head, .track { padding-left: 18px; padding-right: 18px; }
+    .foot-cols { gap: 36px; }
+  }
+</style>
+</head>
+<body>
+  <div class="aurora-bg">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+  <div class="grain"></div>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <div class="wrap nav-inner">
+      <a href="#" class="brand">
+        <span class="mark"></span>
+        <span class="name">promptflix<span class="tld">.in</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#rows">Browse</a>
+        <a href="#roles">By Role</a>
+        <a href="#why">Why us</a>
+        <a href="#footer">About</a>
+      </div>
+      <div class="nav-right">
+        <div class="theme-switch" id="themeSwitch" role="group" aria-label="Accent theme"></div>
+        <button class="btn btn-primary nav-cta" onclick="document.getElementById('search').focus()">Explore Prompts</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- HERO -->
+    <header class="hero">
+      <div class="wrap">
+        <span class="pill reveal"><span class="dot"></span>&nbsp;<b>4,200+</b>&nbsp;curated prompts · no signup, ever</span>
+        <h1 class="headline reveal">The right prompt for the <span class="grad">right person</span>, instantly.</h1>
+        <p class="sub reveal">From curious kids to Fortune 500 CEOs — find your perfect GenAI prompt in seconds, organized by exactly who you are.</p>
+
+        <div class="search-wrap reveal">
+          <div class="search-bar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input id="search" type="text" placeholder="Search prompts by role, tool, or use case…" autocomplete="off" />
+            <button class="btn btn-primary"><span>Explore Prompts — It's Free</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+          </div>
+        </div>
+        <p class="hint reveal">Try <b>“IPL stadium photo”</b>, <b>“3D figurine”</b>, <b>“lesson plan”</b> or <b>“pitch deck”</b></p>
+
+        <div class="chips reveal" id="chips"></div>
+      </div>
+    </header>
+
+    <!-- ROLE ROWS -->
+    <section class="rows-section" id="rows">
+      <div id="roleRows"></div>
+      <div class="no-results" id="noResults">No prompts match your search. Try another keyword or pick a role above.</div>
+    </section>
+
+    <!-- WHY -->
+    <section class="why" id="why">
+      <div class="wrap">
+        <p class="section-tag reveal">Why promptflix</p>
+        <h2 class="section-title reveal">Built for everyone. Gated for no one.</h2>
+        <p class="section-lead reveal">No accounts, no paywalls, no friction. Just the best prompt for whoever you are — ready to copy and run.</p>
+        <div class="why-grid">
+          <div class="why-card reveal">
+            <span class="big">01</span>
+            <div class="why-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"></path></svg>
+            </div>
+            <h3>Zero signup</h3>
+            <p>No email, no password, no "verify your account." Land, search, copy, go. Your perfect prompt is three clicks away — always.</p>
+          </div>
+          <div class="why-card reveal">
+            <span class="big">02</span>
+            <div class="why-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+            </div>
+            <h3>100% free</h3>
+            <p>Every prompt, every role, every tool — completely free, forever. No "pro tier," no locked cards, no credits to burn.</p>
+          </div>
+          <div class="why-card reveal">
+            <span class="big">03</span>
+            <div class="why-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
+            </div>
+            <h3>Organized by who you are</h3>
+            <p>Not a giant unsorted dump. Prompts are curated by role and use case, so a teacher and a CTO each find their fit in seconds.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-band">
+      <div class="wrap">
+        <div class="cta-inner reveal">
+          <h2>Your next great prompt is one search away.</h2>
+          <p>Join thousands discovering better GenAI prompts every day — no strings attached.</p>
+          <button class="btn btn-primary" onclick="document.getElementById('search').focus(); window.scrollTo({top:0,behavior:'smooth'})">Explore Prompts — It's Free</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer id="footer">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <a href="#" class="brand">
+            <span class="mark"></span>
+            <span class="name">promptflix<span class="tld">.in</span></span>
+          </a>
+          <p class="sub">The right prompt for the right person, instantly. From curious kids to Fortune 500 CEOs — find your perfect GenAI prompt in seconds.</p>
+        </div>
+        <div class="foot-cols">
+          <div class="foot-col">
+            <h4>Browse</h4>
+            <a href="#rows">Students</a>
+            <a href="#rows">Developers</a>
+            <a href="#rows">Designers</a>
+            <a href="#rows">Founders & CEOs</a>
+          </div>
+          <div class="foot-col">
+            <h4>Platform</h4>
+            <a href="#why">Why promptflix</a>
+            <a href="#rows">All prompts</a>
+            <a href="#">Submit a prompt</a>
+            <a href="#">Changelog</a>
+          </div>
+          <div class="foot-col">
+            <h4>Company</h4>
+            <a href="#">About</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Contact</a>
+          </div>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <p>© 2026 promptflix.in — Made for everyone who prompts.</p>
+        <div class="socials">
+          <a href="#" aria-label="X"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"></path></svg></a>
+          <a href="#" aria-label="LinkedIn"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14Zm-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79ZM6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68Zm1.39 9.94v-8.37H5.5v8.37h2.77Z"></path></svg></a>
+          <a href="#" aria-label="GitHub"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 0 0 8.84 21.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02a9.58 9.58 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5A10 10 0 0 0 12 2Z"></path></svg></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- PROMPT MODAL -->
+  <div class="modal-overlay" id="modal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <div class="modal-glow"></div>
+      <button class="modal-close" id="modalClose" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+      </button>
+      <div class="modal-head">
+        <span class="badge"><span class="bdot"></span><span id="mBadge">Role</span></span>
+        <span class="m-trend" id="mTrend" hidden>🔥 Trending</span>
+      </div>
+      <h2 class="modal-title" id="mTitle">Prompt title</h2>
+      <div class="modal-preview" id="mPreview"></div>
+      <span class="modal-label">The Prompt</span>
+      <textarea class="modal-prompt" id="mPrompt" readonly spellcheck="false"></textarea>
+      <p class="modal-note">💡 <span>Tip: replace the <b style="color:var(--muted)">[BRACKETS]</b> with your own details before running.</span></p>
+      <div class="modal-ai">
+        <span class="m-ai-label">Works with</span>
+        <div class="ai-tags" id="mTags"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="mEdit">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+          <span id="mEditLabel">Edit</span>
+        </button>
+        <button class="btn btn-primary modal-copy" id="mCopy">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span id="mCopyLabel">Copy prompt</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+    <span>Prompt copied to clipboard</span>
+  </div>
+
+  <script>
+  // ─────────────── DATA ───────────────
+  const ROLES = [
+    { id:'aimedia', label:'AI Image & Video', emoji:'🪄', trending:true, prompts:[
+      { title:'Courtside at an IPL match', text:'A hyper-realistic photo of [ME / UPLOAD] sitting in the front row of a packed IPL cricket stadium at night, floodlights glowing, crowd blurred in the background, wearing a team jersey, cinematic depth of field, shot on 85mm.', ai:['Nano Banana','Midjourney'] },
+      { title:'Hero shot walking onto the pitch', text:'Cinematic low-angle photo of [ME] walking out onto a cricket stadium pitch, bat over shoulder, stadium lights flaring, dramatic golden-hour haze, crowd roaring, ultra-realistic, 35mm film look.', ai:['Midjourney','Nano Banana'] },
+      { title:'3D collectible figurine of me', text:'Turn [UPLOAD] into a 1/7 scale 3D collectible figurine standing on a round base, displayed in a clear blister-pack box on a desk, soft studio lighting, hyper-detailed, product photography style.', ai:['Nano Banana','Midjourney'] },
+      { title:'Retro 90s Bollywood portrait', text:'Transform [UPLOAD] into a nostalgic 1990s Bollywood film poster portrait — warm grain, soft glow, vintage saree/sherwani styling, dramatic studio backdrop, hand-painted poster aesthetic.', ai:['Midjourney','Ideogram'] },
+      { title:'Polaroid with my idol', text:'A candid Polaroid-style photo of [ME] standing next to [CELEBRITY], slight motion blur, direct flash, both smiling, casual setting, ultra-realistic, looks like a real fan photo from a phone.', ai:['Nano Banana','Midjourney'] },
+      { title:'Cinematic drone flythrough (video)', text:'A smooth aerial drone shot flying over [CITY/LANDMARK] at sunrise, golden light, gentle camera push-in, volumetric clouds, cinematic color grade, 5-second seamless loop.', ai:['Veo','Sora','Kling'] },
+      { title:'Talking avatar product ad (video)', text:'A 6-second cinematic ad: [PRODUCT] on a rotating pedestal with soft studio lighting, dynamic camera orbit, dramatic reflections, then a clean logo reveal. Smooth, premium, modern.', ai:['Sora','Veo','Runway'] },
+      { title:'Action-figure-in-a-box of me', text:'Make [UPLOAD] into a boxed action figure toy with accessories beside it (laptop, coffee, headphones), packaging label reads "[MY NAME]", retail toy-aisle lighting, hyper-detailed.', ai:['Nano Banana','Ideogram'] },
+    ]},
+    { id:'students', label:'Students', emoji:'🎓', prompts:[
+      { title:'Explain any topic like I\'m 12', text:'Explain [TOPIC] to me as if I\'m a curious 12-year-old. Use a simple analogy, then give me 3 key takeaways and one question to test myself.', ai:['ChatGPT','Claude','Gemini'] },
+      { title:'Turn my notes into flashcards', text:'Here are my lecture notes: [PASTE NOTES]. Create 15 Q&A flashcards covering the most testable points. Format as Question | Answer.', ai:['ChatGPT','Claude'] },
+      { title:'Essay outline builder', text:'I\'m writing an essay on [TOPIC] for [LEVEL]. Give me a structured outline with a thesis, 3 arguments with evidence ideas, and a counter-argument.', ai:['ChatGPT','Gemini'] },
+      { title:'Study plan in 60 seconds', text:'I have [X days] until my [SUBJECT] exam and these topics: [LIST]. Build me a day-by-day study schedule prioritizing weak areas.', ai:['Claude','Gemini'] },
+      { title:'Decode a hard paragraph', text:'Rewrite this dense academic paragraph in plain English without losing meaning, then list any technical terms with definitions: [PASTE]', ai:['ChatGPT','Claude'] },
+    ]},
+    { id:'developers', label:'Developers', emoji:'💻', prompts:[
+      { title:'Explain this code, then refactor it', text:'Explain what this code does step by step, flag any bugs or edge cases, then refactor it for readability and performance: [PASTE CODE]', ai:['ChatGPT','Claude'] },
+      { title:'SQL query from plain English', text:'I have tables [SCHEMA]. Write an optimized SQL query that [GOAL]. Explain the joins and suggest indexes that would speed it up.', ai:['Claude','Gemini'] },
+      { title:'Write tests for this function', text:'Write a comprehensive unit test suite for this function covering happy paths, edge cases, and failures. Use [FRAMEWORK]: [PASTE]', ai:['ChatGPT','Claude'] },
+      { title:'Debug a stack trace', text:'I\'m getting this error: [PASTE STACK TRACE]. Here\'s the relevant code: [PASTE]. Diagnose the likely cause and give me the fix.', ai:['ChatGPT','Claude','Gemini'] },
+      { title:'Design a clean API', text:'Design a RESTful API for [FEATURE]. Give me endpoints, request/response shapes, status codes, and auth considerations.', ai:['Claude','Gemini'] },
+    ]},
+    { id:'designers', label:'Designers', emoji:'🎨', prompts:[
+      { title:'Critique my design decisions', text:'Act as a senior product designer. Critique this design for [PRODUCT]: [DESCRIBE/PASTE]. Cover hierarchy, spacing, contrast, and accessibility.', ai:['Claude','ChatGPT'] },
+      { title:'Generate a color system', text:'Build a cohesive color palette for a [MOOD] [PRODUCT TYPE] brand. Give hex values for primary, accent, neutrals, and semantic states with usage notes.', ai:['ChatGPT','Gemini'] },
+      { title:'Microcopy that converts', text:'Write 5 variants of microcopy for this [BUTTON/EMPTY STATE/ERROR]: [CONTEXT]. Keep it clear, on-brand, and under 8 words each.', ai:['Claude','ChatGPT'] },
+      { title:'Turn a brief into a moodboard plan', text:'Here\'s a creative brief: [PASTE]. Outline a moodboard direction: tone, typography pairing, imagery style, and 3 reference vibes.', ai:['ChatGPT','Gemini'] },
+      { title:'Accessibility audit', text:'Review this UI description for WCAG issues: [PASTE]. List violations by severity with concrete fixes.', ai:['Claude'] },
+    ]},
+    { id:'hr', label:'HR & Recruiters', emoji:'🧑‍💼', prompts:[
+      { title:'Job description that attracts talent', text:'Write an inclusive, compelling job description for a [ROLE] at a [COMPANY TYPE]. Include responsibilities, must-haves, nice-to-haves, and a culture blurb.', ai:['ChatGPT','Claude'] },
+      { title:'Screen a resume fast', text:'Compare this resume against this job description and score fit 1-10 with reasons. Flag gaps and 3 interview questions to probe: [PASTE BOTH]', ai:['Claude','Gemini'] },
+      { title:'Structured interview kit', text:'Create a structured interview guide for a [ROLE]. Include 6 behavioral questions, what a strong answer looks like, and a scoring rubric.', ai:['ChatGPT','Claude'] },
+      { title:'Gentle rejection email', text:'Write a warm, respectful rejection email to a candidate who interviewed for [ROLE] but wasn\'t selected. Encourage future applications.', ai:['ChatGPT','Gemini'] },
+      { title:'Onboarding checklist', text:'Build a 30-60-90 day onboarding plan for a new [ROLE] including goals, key relationships, and check-in milestones.', ai:['Claude','Gemini'] },
+    ]},
+    { id:'founders', label:'Founders & CEOs', emoji:'🚀', prompts:[
+      { title:'Pitch deck narrative', text:'I\'m raising for [STARTUP doing X]. Draft a 10-slide pitch deck narrative: problem, solution, market, traction, business model, and the ask.', ai:['Claude','ChatGPT'] },
+      { title:'Investor update email', text:'Write a concise monthly investor update. Metrics: [PASTE]. Sections: TL;DR, wins, challenges, asks, and runway. Confident but honest tone.', ai:['ChatGPT','Claude'] },
+      { title:'Pressure-test my strategy', text:'Act as a skeptical board member. Pressure-test this strategy for [GOAL]: [PASTE]. Surface the 3 biggest risks and what would make you say no.', ai:['Claude','Gemini'] },
+      { title:'Positioning in one sentence', text:'Help me craft positioning for [PRODUCT]. Give me 5 one-sentence statements in the form "For [audience] who [need], [product] is the [category] that [benefit]."', ai:['ChatGPT','Claude'] },
+      { title:'Hiring scorecard', text:'I\'m hiring a [EXEC ROLE]. Define the outcomes this person must deliver in year one and the competencies to screen for.', ai:['Claude'] },
+    ]},
+    { id:'creators', label:'Content Creators', emoji:'🎬', prompts:[
+      { title:'30 days of content ideas', text:'Give me 30 content ideas for a [NICHE] creator on [PLATFORM]. Mix formats: hooks, tutorials, hot takes, and behind-the-scenes.', ai:['ChatGPT','Gemini'] },
+      { title:'Scroll-stopping hooks', text:'Write 10 scroll-stopping hooks for a video about [TOPIC]. Make them punchy, curiosity-driven, and under 12 words.', ai:['Claude','ChatGPT'] },
+      { title:'Repurpose one video into 5 posts', text:'Here\'s my video transcript: [PASTE]. Repurpose it into a thread, a LinkedIn post, an Instagram caption, a newsletter blurb, and a short script.', ai:['Claude','Gemini'] },
+      { title:'YouTube title + thumbnail text', text:'Generate 8 high-CTR YouTube titles and matching 3-word thumbnail text for a video about [TOPIC]. Avoid clickbait that misleads.', ai:['ChatGPT','Gemini'] },
+      { title:'Brand deal pitch', text:'Write a friendly outreach email pitching a collaboration to [BRAND] as a [NICHE] creator with [AUDIENCE SIZE]. Lead with value to them.', ai:['ChatGPT','Claude'] },
+    ]},
+    { id:'teachers', label:'Teachers', emoji:'📚', prompts:[
+      { title:'Lesson plan in minutes', text:'Create a 45-minute lesson plan on [TOPIC] for [GRADE]. Include objectives, a hook, activities, differentiation, and an exit ticket.', ai:['ChatGPT','Claude'] },
+      { title:'Differentiate for every learner', text:'Take this activity: [PASTE]. Give me 3 versions — support, on-level, and extension — so every student in my class is challenged appropriately.', ai:['Claude','Gemini'] },
+      { title:'Quiz + answer key', text:'Write a 10-question quiz on [TOPIC] for [GRADE] with a mix of multiple choice and short answer. Include an answer key with explanations.', ai:['ChatGPT','Gemini'] },
+      { title:'Parent update message', text:'Draft a warm, professional message to parents about [SITUATION]. Keep it clear, supportive, and action-oriented.', ai:['ChatGPT','Claude'] },
+      { title:'Make it fun: classroom game', text:'Turn this learning objective into an engaging classroom game for [GRADE]: [OBJECTIVE]. Explain setup, rules, and how to assess.', ai:['Claude','Gemini'] },
+    ]},
+    { id:'kids', label:'Kids', emoji:'🧒', prompts:[
+      { title:'Tell me a bedtime story', text:'Tell me a fun bedtime story about a [ANIMAL] who goes on an adventure to [PLACE]. Make it kind, a little silly, and end happily.', ai:['ChatGPT','Gemini'] },
+      { title:'Why is the sky blue?', text:'Explain why [EVERYDAY THING happens] in a way a 7-year-old would understand. Use a fun example and keep it short.', ai:['ChatGPT','Claude','Gemini'] },
+      { title:'Homework helper (not cheater)', text:'I\'m stuck on this homework problem: [PASTE]. Don\'t give me the answer — guide me with hints and questions until I figure it out myself.', ai:['Claude','ChatGPT'] },
+      { title:'Make up a silly riddle', text:'Make up 3 silly, kid-friendly riddles about [TOPIC]. Give me the riddles first, then the answers upside-down at the end.', ai:['Gemini','ChatGPT'] },
+      { title:'Draw with words', text:'Help me invent a brand-new make-believe creature. Describe what it looks like, where it lives, and its one magical power.', ai:['ChatGPT','Claude'] },
+    ]},
+  ];
+
+  // ─────────────── RENDER ───────────────
+  const aiColors = {
+    'ChatGPT':'#10A37F', 'Claude':'#D97757', 'Gemini':'#4285F4',
+    'Midjourney':'#9A7CFF', 'Nano Banana':'#F5C542', 'Ideogram':'#FF7AC6', 'DALL·E':'#19C37D',
+    'Sora':'#E5E7F0', 'Veo':'#5B9BFF', 'Runway':'#43E6B5', 'Kling':'#FF8A5B'
+  };
+  const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  // ─────────────── GENERATIVE INTERACTIVE ART ───────────────
+  function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+  function mulberry(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+  function artSVG(seedStr){
+    const uid = hashStr(seedStr).toString(36);
+    const r = mulberry(hashStr(seedStr));
+    const W=340, H=152;
+    let s = `<svg class="art" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">`;
+    s += `<defs>
+      <radialGradient id="ga-${uid}" cx="50%" cy="50%" r="50%"><stop offset="0" class="gs1a"/><stop offset="1" class="gs0a"/></radialGradient>
+      <radialGradient id="gb-${uid}" cx="50%" cy="50%" r="50%"><stop offset="0" class="gs1b"/><stop offset="1" class="gs0b"/></radialGradient>
+    </defs>`;
+    s += `<rect width="${W}" height="${H}" class="art-bg"/><g class="art-parallax">`;
+    // soft orbs
+    for(let i=0;i<3;i++){
+      const cx=(30+r()*(W-60)).toFixed(0), cy=(20+r()*(H-40)).toFixed(0), rad=(38+r()*42).toFixed(0);
+      const g = r()<0.5?'ga':'gb';
+      const dx=(r()*16-8).toFixed(1), dy=(r()*12-6).toFixed(1), dur=(7+r()*6).toFixed(1);
+      s += `<circle cx="${cx}" cy="${cy}" r="${rad}" fill="url(#${g}-${uid})" class="blob" style="--dx:${dx}px;--dy:${dy}px;animation-duration:${dur}s"/>`;
+    }
+    // constellation
+    const pts=[]; const np=4+Math.floor(r()*3);
+    for(let i=0;i<np;i++) pts.push([(16+r()*(W-32)).toFixed(0),(16+r()*(H-32)).toFixed(0)]);
+    s += `<polyline points="${pts.map(p=>p.join(',')).join(' ')}" class="art-line"/>`;
+    pts.forEach((p,i)=> s += `<circle cx="${p[0]}" cy="${p[1]}" r="2.3" class="art-node" style="animation-delay:${(i*0.4).toFixed(1)}s"/>`);
+    // stars
+    const ns=16+Math.floor(r()*12);
+    for(let i=0;i<ns;i++){
+      const cx=(r()*W).toFixed(0), cy=(r()*H).toFixed(0), rad=(0.5+r()*1.3).toFixed(1);
+      s += `<circle cx="${cx}" cy="${cy}" r="${rad}" class="star" style="animation-delay:${(r()*3).toFixed(1)}s"/>`;
+    }
+    // rotating motif: dashed ring + diamond
+    const mx=(W*0.5+(r()*90-45)).toFixed(0), my=(H*0.5+(r()*36-18)).toFixed(0), mr=(20+r()*12).toFixed(0);
+    s += `<circle cx="${mx}" cy="${my}" r="${mr}" class="art-ring" style="transform-origin:${mx}px ${my}px"/>`;
+    const d=(mr*0.5).toFixed(0);
+    s += `<rect x="${(mx-d).toFixed(0)}" y="${(my-d).toFixed(0)}" width="${(d*2)}" height="${(d*2)}" class="art-diamond" style="transform-origin:${mx}px ${my}px" transform="rotate(45 ${mx} ${my})"/>`;
+    s += `</g></svg>`;
+    return s;
+  }
+
+  function thumbInner(seedStr, emoji, label){
+    return artSVG(seedStr) +
+      `<span class="thumb-emoji">${emoji}</span>` +
+      (label ? `<span class="thumb-label">${esc(label)}</span>` : '');
+  }
+
+  // pointer parallax on a thumbnail element
+  function attachParallax(el){
+    el.addEventListener('pointermove', e => {
+      const g = el.querySelector('.art-parallax'); if(!g) return;
+      const rect = el.getBoundingClientRect();
+      const nx = (e.clientX-rect.left)/rect.width - 0.5;
+      const ny = (e.clientY-rect.top)/rect.height - 0.5;
+      g.style.transform = `translate(${(-nx*12).toFixed(1)}px, ${(-ny*9).toFixed(1)}px)`;
+    });
+    el.addEventListener('pointerleave', () => {
+      const g = el.querySelector('.art-parallax'); if(g) g.style.transform = '';
+    });
+  }
+
+  function cardHTML(p, role, idx){
+    const roleLabel = role.label;
+    const tags = p.ai.map(a => `<span class="ai-tag" style="color:${aiColors[a]||'#9A9CB8'}">${a}</span>`).join('');
+    return `<article class="card" data-role-id="${role.id}" data-idx="${idx}" data-text="${esc((p.title+' '+p.text+' '+roleLabel+' '+p.ai.join(' ')).toLowerCase())}">
+      <div class="card-thumb">
+        ${thumbInner(role.id+'-'+idx, role.emoji, p.title)}
+      </div>
+      <div class="card-top">
+        <span class="badge"><span class="bdot"></span>${esc(roleLabel)}</span>
+        <button class="save" aria-label="Save" title="Save">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+        </button>
+      </div>
+      <h3>${esc(p.title)}</h3>
+      <div class="prompt-text">${esc(p.text)}</div>
+      <div class="card-bottom">
+        <div class="ai-tags">${tags}</div>
+        <button class="copy-btn" data-copy="${esc(p.text)}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy
+        </button>
+      </div>
+    </article>`;
+  }
+
+  function rowHTML(role){
+    const cards = role.prompts.map((p,i) => cardHTML(p, role, i)).join('');
+    return `<div class="row" data-role="${role.id}" id="role-${role.id}">
+      <div class="row-head">
+        <h2><span class="emoji">${role.emoji}</span>${esc(role.label)}${role.trending ? '<span class="trend">🔥 Trending</span>' : ''}</h2>
+        <span class="count">${role.prompts.length} prompts</span>
+        <div class="arrows">
+          <button data-dir="-1" aria-label="Scroll left"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+          <button data-dir="1" aria-label="Scroll right"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+        </div>
+      </div>
+      <div class="track-mask"><div class="track">${cards}</div></div>
+    </div>`;
+  }
+
+  const rowsContainer = document.getElementById('roleRows');
+  rowsContainer.innerHTML = ROLES.map(rowHTML).join('');
+  rowsContainer.querySelectorAll('.card-thumb').forEach(attachParallax);
+
+  // chips
+  const chips = document.getElementById('chips');
+  chips.innerHTML = `<span class="chip active" data-role="all">All</span>` +
+    ROLES.map(r => `<span class="chip" data-role="${r.id}">${r.emoji} ${esc(r.label)}</span>`).join('');
+
+  // ─────────────── THEME SWITCHER ───────────────
+  const THEMES = [
+    { id:'cinema',  c1:'#E11D2A', c2:'#FF4242', label:'Cinema' },
+    { id:'aurora',  c1:'#7C5CFF', c2:'#22D3EE', label:'Aurora' },
+    { id:'sunset',  c1:'#FF5E7E', c2:'#FFB24D', label:'Sunset' },
+    { id:'emerald', c1:'#19D58E', c2:'#22D3EE', label:'Emerald' },
+    { id:'rose',    c1:'#FF5EC4', c2:'#9A7CFF', label:'Rose' },
+    { id:'ocean',   c1:'#3B82F6', c2:'#22D3EE', label:'Ocean' },
+  ];
+  const themeSwitch = document.getElementById('themeSwitch');
+  themeSwitch.innerHTML = THEMES.map(t =>
+    `<button data-theme-id="${t.id}" title="${t.label}" aria-label="${t.label} theme"><span class="sw" style="background:linear-gradient(135deg,${t.c1},${t.c2})"></span></button>`
+  ).join('');
+
+  function applyTheme(id){
+    if(id === 'aurora') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', id);
+    themeSwitch.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.themeId === id));
+    try { localStorage.setItem('pf-theme-v2', id); } catch(e){}
+  }
+  themeSwitch.addEventListener('click', e => {
+    const b = e.target.closest('button[data-theme-id]');
+    if(b) applyTheme(b.dataset.themeId);
+  });
+  let savedTheme = 'cinema';
+  try { savedTheme = localStorage.getItem('pf-theme-v2') || 'cinema'; } catch(e){}
+  applyTheme(THEMES.some(t => t.id === savedTheme) ? savedTheme : 'cinema');
+
+  // ─────────────── INTERACTIONS ───────────────
+  // robust clipboard copy (works in sandboxed/insecure frames)
+  function copyText(text){
+    if(navigator.clipboard && window.isSecureContext){
+      return navigator.clipboard.writeText(text).catch(()=> fallbackCopy(text));
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+  function fallbackCopy(text){
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly','');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+
+  // copy
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  function showToast(msg){
+    toast.querySelector('span').textContent = msg || 'Prompt copied to clipboard';
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toast.classList.remove('show'), 2000);
+  }
+  rowsContainer.addEventListener('click', e => {
+    const btn = e.target.closest('.copy-btn');
+    if(btn){
+      e.stopPropagation();
+      const text = btn.getAttribute('data-copy');
+      copyText(text);
+      btn.classList.add('done');
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg> Copied`;
+      clearTimeout(btn._t);
+      btn._t = setTimeout(()=>{ btn.classList.remove('done'); btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy`; }, 1800);
+      showToast('Prompt copied to clipboard');
+      return;
+    }
+    const save = e.target.closest('.save');
+    if(save){
+      e.stopPropagation();
+      save.style.color = save.style.color === 'rgb(34, 211, 238)' ? '' : 'rgb(34, 211, 238)';
+      return;
+    }
+    const card = e.target.closest('.card');
+    if(card){ openModal(card); }
+  });
+
+  // ─────────────── MODAL ───────────────
+  const modal = document.getElementById('modal');
+  const mBadge = document.getElementById('mBadge');
+  const mTrend = document.getElementById('mTrend');
+  const mTitle = document.getElementById('mTitle');
+  const mPrompt = document.getElementById('mPrompt');
+  const mTags = document.getElementById('mTags');
+  const mEdit = document.getElementById('mEdit');
+  const mEditLabel = document.getElementById('mEditLabel');
+  const mCopy = document.getElementById('mCopy');
+  const mCopyLabel = document.getElementById('mCopyLabel');
+
+  function autosize(){ mPrompt.style.height = 'auto'; mPrompt.style.height = mPrompt.scrollHeight + 'px'; }
+
+  function setEditing(on){
+    mPrompt.readOnly = !on;
+    mPrompt.classList.toggle('editing', on);
+    mEdit.classList.toggle('active', on);
+    mEditLabel.textContent = on ? 'Done' : 'Edit';
+    if(on){ mPrompt.focus(); const v = mPrompt.value; mPrompt.setSelectionRange(v.length, v.length); }
+  }
+
+  function openModal(card){
+    const role = ROLES.find(r => r.id === card.dataset.roleId);
+    if(!role) return;
+    const p = role.prompts[+card.dataset.idx];
+    mBadge.textContent = role.label;
+    mTrend.hidden = !role.trending;
+    mTitle.textContent = p.title;
+    mPrompt.value = p.text;
+    mTags.innerHTML = p.ai.map(a => `<span class="ai-tag" style="color:${aiColors[a]||'#9A9CB8'}">${a}</span>`).join('');
+    const mPrev = document.getElementById('mPreview');
+    mPrev.innerHTML = thumbInner(role.id+'-'+(+card.dataset.idx), role.emoji, null);
+    attachParallax(mPrev);
+    setEditing(false);
+    mCopy.classList.remove('done');
+    mCopyLabel.textContent = 'Copy prompt';
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(autosize);
+  }
+
+  function closeModal(){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    setEditing(false);
+    setTimeout(()=>{ if(!modal.classList.contains('open')) document.getElementById('mPreview').innerHTML=''; }, 400);
+  }
+
+  mEdit.addEventListener('click', () => setEditing(mPrompt.readOnly));
+  mPrompt.addEventListener('input', autosize);
+  mCopy.addEventListener('click', () => {
+    copyText(mPrompt.value);
+    mCopy.classList.add('done');
+    mCopyLabel.textContent = 'Copied!';
+    showToast('Prompt copied to clipboard');
+    clearTimeout(mCopy._t);
+    mCopy._t = setTimeout(()=>{ mCopy.classList.remove('done'); mCopyLabel.textContent = 'Copy prompt'; }, 1900);
+  });
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+  // arrows
+  rowsContainer.addEventListener('click', e => {
+    const arrow = e.target.closest('.arrows button');
+    if(!arrow) return;
+    const track = arrow.closest('.row').querySelector('.track');
+    track.scrollBy({ left: Number(arrow.dataset.dir) * (track.clientWidth * 0.8), behavior:'smooth' });
+  });
+
+  // card glow follow
+  rowsContainer.addEventListener('pointermove', e => {
+    const card = e.target.closest('.card');
+    if(!card) return;
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+
+  // search + chips filter
+  const search = document.getElementById('search');
+  const noResults = document.getElementById('noResults');
+  let activeRole = 'all';
+
+  function applyFilter(){
+    const q = search.value.trim().toLowerCase();
+    let anyVisible = false;
+    ROLES.forEach(role => {
+      const row = document.getElementById('role-'+role.id);
+      const roleMatch = activeRole === 'all' || activeRole === role.id;
+      let visibleCards = 0;
+      row.querySelectorAll('.card').forEach(card => {
+        const match = roleMatch && (!q || card.dataset.text.includes(q));
+        card.style.display = match ? '' : 'none';
+        if(match) visibleCards++;
+      });
+      row.style.display = visibleCards ? '' : 'none';
+      if(visibleCards) anyVisible = true;
+      const countEl = row.querySelector('.count');
+      if(countEl) countEl.textContent = visibleCards + ' prompt' + (visibleCards===1?'':'s');
+    });
+    noResults.style.display = anyVisible ? 'none' : 'block';
+  }
+
+  search.addEventListener('input', applyFilter);
+
+  chips.addEventListener('click', e => {
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    chips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activeRole = chip.dataset.role;
+    applyFilter();
+    if(activeRole !== 'all'){
+      document.getElementById('rows').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  });
+
+  // nav scroll state
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 12);
+  }, { passive:true });
+
+  // reveal on scroll
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => { if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal, .why-card, .card').forEach((el,i) => {
+    el.classList.add('reveal');
+    io.observe(el);
+  });
+  // stagger hero reveals immediately
+  document.querySelectorAll('header.hero .reveal').forEach((el,i)=>{
+    setTimeout(()=> el.classList.add('in'), 90*i + 80);
+  });
+  </script>
+</body>
+</html>
