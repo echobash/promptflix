@@ -8,1052 +8,769 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root {
-    --bg:        #0a0b16;
-    --bg-2:      #0d0e1d;
-    --surface:   rgba(255,255,255,0.035);
-    --surface-2: rgba(255,255,255,0.06);
-    --stroke:    rgba(255,255,255,0.09);
-    --stroke-2:  rgba(255,255,255,0.16);
-    --text:      #ECEDF6;
-    --muted:     #9A9CB8;
-    --faint:     #686A8A;
-    --a1:        #7C5CFF;
-    --a1-rgb:    124,92,255;
-    --a-mid:     #5B6BFF;
-    --a2:        #22D3EE;
-    --a2-rgb:    34,211,238;
-    --violet:    var(--a1);
-    --indigo:    var(--a-mid);
-    --cyan:      var(--a2);
-    --aurora:    linear-gradient(115deg, var(--a1) 0%, var(--a-mid) 42%, var(--a2) 100%);
-    --aurora-soft: linear-gradient(115deg, rgba(var(--a1-rgb),0.18), rgba(var(--a2-rgb),0.14));
-    --radius:    18px;
-    --maxw:      1280px;
-  }
-
-  /* ── THEMES (accent swap) ── */
-  [data-theme="cinema"]  { --a1:#E11D2A; --a1-rgb:225,29,42; --a-mid:#B00C1E; --a2:#FF4242; --a2-rgb:255,66,66;
-                           --bg:#0a0708; --bg-2:#0d090a; }
-  [data-theme="sunset"]  { --a1:#FF5E7E; --a1-rgb:255,94,126; --a-mid:#FF7A5C; --a2:#FFB24D; --a2-rgb:255,178,77; }
-  [data-theme="emerald"] { --a1:#19D58E; --a1-rgb:25,213,142; --a-mid:#16C7B4; --a2:#22D3EE; --a2-rgb:34,211,238; }
-  [data-theme="rose"]    { --a1:#FF5EC4; --a1-rgb:255,94,196; --a-mid:#C95CE0; --a2:#9A7CFF; --a2-rgb:154,124,255; }
-  [data-theme="ocean"]   { --a1:#3B82F6; --a1-rgb:59,130,246; --a-mid:#4F9DF7; --a2:#22D3EE; --a2-rgb:34,211,238; }
-
-  /* ── SHIMMER ── */
-  @keyframes textShimmer { to { background-position: 200% center; } }
-  @keyframes cardShimmer { from { background-position: 160% 0; } to { background-position: -60% 0; } }
-  @keyframes btnShimmer  { 0% { left:-70%; } 55%,100% { left:140%; } }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Inter', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-    line-height: 1.5;
-  }
-  ::selection { background: rgba(var(--a1-rgb),0.4); color: #fff; }
-
-  /* ambient aurora field */
-  .aurora-bg {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-  }
-  .aurora-bg .blob {
-    position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5;
-  }
-  .blob.b1 { width: 620px; height: 620px; top: -240px; left: -120px;
-    background: radial-gradient(circle, rgba(var(--a1-rgb),0.55), transparent 65%); }
-  .blob.b2 { width: 540px; height: 540px; top: -120px; right: -160px;
-    background: radial-gradient(circle, rgba(var(--a2-rgb),0.4), transparent 65%); }
-  .blob.b3 { width: 480px; height: 480px; top: 420px; left: 38%;
-    background: radial-gradient(circle, rgba(var(--a1-rgb),0.3), transparent 68%); }
-  .grain {
-    position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.45;
-    background-image: radial-gradient(rgba(255,255,255,0.18) 0.5px, transparent 0.5px);
-    background-size: 3px 3px;
-    mix-blend-mode: overlay;
-  }
-
-  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
-  main, nav, footer { position: relative; z-index: 2; }
-
-  /* ───────────────────────── NAV ───────────────────────── */
-  nav {
-    position: sticky; top: 0; z-index: 50;
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-    background: rgba(10,11,22,0.55);
-    border-bottom: 1px solid transparent;
-    transition: border-color .3s, background .3s;
-  }
-  nav.scrolled { border-bottom-color: var(--stroke); background: rgba(10,11,22,0.82); }
-  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 70px; }
-  .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
-  .brand .mark {
-    width: 30px; height: 30px; border-radius: 9px; background: var(--aurora);
-    position: relative; box-shadow: 0 4px 22px rgba(var(--a1-rgb),0.5);
-  }
-  .brand .mark::after {
-    content: ''; position: absolute; inset: 7px 11px; border-radius: 2px;
-    border-left: 3px solid #fff; border-bottom: 3px solid #fff;
-    border-bottom-right-radius: 4px; opacity: 0.95;
-  }
-  .brand .name { font-weight: 800; font-size: 21px; letter-spacing: -0.02em; color: #fff; }
-  .brand .name .tld { background: var(--aurora); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: textShimmer 7s linear infinite; }
-  .nav-links { display: flex; align-items: center; gap: 34px; }
-  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14.5px; font-weight: 500; transition: color .2s; }
-  .nav-links a:hover { color: #fff; }
-  .btn {
-    font-family: inherit; font-weight: 600; cursor: pointer; border: none;
-    border-radius: 11px; transition: transform .15s ease, box-shadow .25s, background .25s;
-    display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
-  }
-  .btn-primary {
-    background: var(--aurora); color: #fff; padding: 11px 20px; font-size: 14.5px;
-    box-shadow: 0 6px 26px rgba(var(--a1-rgb),0.42);
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 34px rgba(var(--a1-rgb),0.6); }
-  .btn-primary:active { transform: translateY(0); }
-  .btn-primary { position: relative; overflow: hidden; }
-  .btn-primary::after {
-    content:''; position:absolute; top:0; left:-70%; width:45%; height:100%; pointer-events:none; z-index:0;
-    background: linear-gradient(100deg, transparent, rgba(255,255,255,0.3), transparent);
-    transform: skewX(-22deg); animation: btnShimmer 4.2s ease-in-out infinite;
-  }
-  .btn-primary > * { position: relative; z-index: 1; }
-  .nav-cta { padding: 9px 18px; }
-  .nav-right { display: flex; align-items: center; gap: 16px; }
-  .theme-switch { display: flex; align-items: center; gap: 8px; padding-right: 4px; }
-  .theme-switch button {
-    width: 22px; height: 22px; border-radius: 50%; cursor: pointer; padding: 0;
-    border: 2px solid transparent; background: transparent; position: relative; transition: transform .16s;
-  }
-  .theme-switch button .sw {
-    position: absolute; inset: 2px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
-  }
-  .theme-switch button:hover { transform: scale(1.15); }
-  .theme-switch button.active { border-color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,0.18); }
-
-  /* ───────────────────────── HERO ───────────────────────── */
-  header.hero { padding: 92px 0 70px; text-align: center; }
-  .pill {
-    display: inline-flex; align-items: center; gap: 9px; margin-bottom: 30px;
-    padding: 7px 15px 7px 11px; border-radius: 100px; font-size: 13px; font-weight: 500;
-    background: var(--surface); border: 1px solid var(--stroke); color: var(--muted);
-  }
-  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan);
-    box-shadow: 0 0 0 4px rgba(var(--a2-rgb),0.18); animation: pulse 2.4s ease-in-out infinite; }
-  @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(var(--a2-rgb),0); } }
-  .pill b { color: var(--text); font-weight: 600; }
-
-  h1.headline {
-    font-size: clamp(42px, 6.6vw, 86px); font-weight: 900; letter-spacing: -0.035em;
-    line-height: 0.98; margin: 0 auto 26px; max-width: 16ch; color: #fff;
-  }
-  h1.headline .grad { background: var(--aurora); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: textShimmer 6s linear infinite; }
-  .sub {
-    font-size: clamp(17px, 2vw, 21px); color: var(--muted); max-width: 60ch; margin: 0 auto 14px;
-    font-weight: 400;
-  }
-  .subsub { font-size: 15.5px; color: var(--faint); max-width: 56ch; margin: 0 auto 40px; }
-
-  /* search */
-  .search-wrap { max-width: 660px; margin: 0 auto 22px; position: relative; }
-  .search-bar {
-    display: flex; align-items: center; gap: 4px; padding: 8px 8px 8px 20px;
-    background: var(--surface-2); border: 1px solid var(--stroke-2); border-radius: 16px;
-    backdrop-filter: blur(12px); transition: border-color .25s, box-shadow .25s;
-  }
-  .search-bar:focus-within { border-color: rgba(var(--a1-rgb),0.6); box-shadow: 0 0 0 4px rgba(var(--a1-rgb),0.16), 0 16px 50px rgba(0,0,0,0.4); }
-  .search-bar svg { flex: none; color: var(--faint); }
-  .search-bar input {
-    flex: 1; background: none; border: none; outline: none; color: var(--text);
-    font-family: inherit; font-size: 16px; padding: 10px 4px;
-  }
-  .search-bar input::placeholder { color: var(--faint); }
-  .search-bar .btn-primary { padding: 12px 22px; }
-  .hint { font-size: 13px; color: var(--faint); }
-  .hint b { color: var(--muted); font-weight: 600; }
-  .chips { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; margin-top: 22px; }
-  .chip {
-    font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer;
-    padding: 7px 14px; border-radius: 100px; background: var(--surface); border: 1px solid var(--stroke);
-    transition: all .18s;
-  }
-  .chip:hover { color: #fff; border-color: var(--stroke-2); background: var(--surface-2); }
-  .chip.active { color: #fff; background: var(--aurora-soft); border-color: rgba(var(--a1-rgb),0.5); }
-
-  /* ───────────────────────── ROLE ROWS ───────────────────────── */
-  .rows-section { padding: 46px 0 30px; }
-  .no-results { text-align: center; color: var(--faint); padding: 60px 0; font-size: 16px; display: none; }
-  .row { margin-bottom: 50px; }
-  .row-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 18px; padding: 0 28px; max-width: var(--maxw); margin-left:auto; margin-right:auto; }
-  .row-head h2 { font-size: 23px; font-weight: 800; letter-spacing: -0.02em; color: #fff; display:flex; align-items:center; gap:11px; }
-  .row-head .emoji { font-size: 21px; }
-  .row-head .count { font-size: 13px; color: var(--faint); font-weight: 500; }
-  .row-head .trend {
-    font-size: 11.5px; font-weight: 700; letter-spacing: 0.02em; color: #ffd9a8;
-    padding: 4px 10px; border-radius: 100px; background: linear-gradient(115deg, rgba(255,138,91,0.22), rgba(245,197,66,0.18));
-    border: 1px solid rgba(255,138,91,0.4); margin-left: 2px;
-  }
-  .row-head .arrows { margin-left: auto; display: flex; gap: 8px; }
-  .arrows button {
-    width: 36px; height: 36px; border-radius: 10px; background: var(--surface); border: 1px solid var(--stroke);
-    color: var(--muted); cursor: pointer; display: grid; place-items: center; transition: all .18s;
-  }
-  .arrows button:hover { color: #fff; background: var(--surface-2); border-color: var(--stroke-2); }
-  .arrows button:disabled { opacity: 0.3; cursor: default; }
-
-  .track-mask { position: relative; }
-  .track {
-    display: flex; gap: 18px; overflow-x: auto; scroll-behavior: smooth;
-    padding: 6px 28px 16px; max-width: var(--maxw); margin: 0 auto;
-    scrollbar-width: none;
-  }
-  .track::-webkit-scrollbar { display: none; }
-
-  /* ───────────────────────── PROMPT CARD ───────────────────────── */
-  .card {
-    flex: 0 0 340px; width: 340px; min-height: 252px;
-    background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.022));
-    border: 1px solid var(--stroke); border-radius: var(--radius);
-    padding: 20px; display: flex; flex-direction: column;
-    position: relative; overflow: hidden; cursor: pointer;
-    transition: transform .28s cubic-bezier(.2,.7,.3,1), border-color .28s, box-shadow .28s;
-  }
-  .card::before {
-    content: ''; position: absolute; inset: 0; border-radius: var(--radius);
-    background: radial-gradient(420px circle at var(--mx,50%) var(--my,0%), rgba(var(--a1-rgb),0.16), transparent 60%);
-    opacity: 0; transition: opacity .3s; pointer-events: none;
-  }
-  .card:hover { transform: translateY(-6px); border-color: rgba(var(--a1-rgb),0.45);
-    box-shadow: 0 22px 60px -20px rgba(var(--a1-rgb),0.4), 0 0 0 1px rgba(var(--a1-rgb),0.1); }
-  .card:hover::before { opacity: 1; }
-  .card::after {
-    content:''; position:absolute; inset:0; border-radius:var(--radius); pointer-events:none; z-index:2;
-    background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.13) 50%, transparent 65%);
-    background-size: 220% 100%; background-position: 160% 0; opacity:0; transition:opacity .25s;
-  }
-  .card:hover::after { opacity:1; animation: cardShimmer 1.05s ease-out; }
-
-  /* card preview thumbnail — generative interactive SVG */
-  .card-thumb { width: 100%; height: 152px; margin-bottom: 15px; border-radius: 13px; overflow: hidden; position: relative; z-index: 1;
-    background: linear-gradient(160deg, rgba(var(--a1-rgb),0.14), rgba(var(--a2-rgb),0.05)); cursor: pointer; }
-  .art { display: block; width: 100%; height: 100%; }
-  .art-bg { fill: rgba(255,255,255,0.014); }
-  .gs1a { stop-color: var(--a1); stop-opacity: .55; }
-  .gs0a { stop-color: var(--a1); stop-opacity: 0; }
-  .gs1b { stop-color: var(--a2); stop-opacity: .5; }
-  .gs0b { stop-color: var(--a2); stop-opacity: 0; }
-  .art-parallax { transition: transform .25s cubic-bezier(.2,.7,.3,1); }
-  .blob { animation: blobFloat ease-in-out infinite alternate; will-change: transform; }
-  @keyframes blobFloat { to { transform: translate(var(--dx,0), var(--dy,0)); } }
-  .star { fill: #fff; animation: twinkle 3s ease-in-out infinite; }
-  @keyframes twinkle { 0%,100% { opacity:.18; } 50% { opacity:.8; } }
-  .art-line { fill: none; stroke: var(--a2); stroke-width: .8; stroke-opacity: .26; stroke-linejoin: round; }
-  .art-node { fill: var(--a2); opacity: .85; animation: twinkle 2.6s ease-in-out infinite; }
-  .art-ring { fill: none; stroke: var(--a1); stroke-width: 1.5; stroke-dasharray: 5 7; stroke-opacity: .55; animation: ringSpin 22s linear infinite; transition: stroke-opacity .3s; }
-  @keyframes ringSpin { to { transform: rotate(360deg); } }
-  .art-diamond { fill: none; stroke: var(--a2); stroke-width: 1.4; stroke-opacity: .5; animation: ringSpin 16s linear infinite reverse; transition: stroke-opacity .3s; }
-  .card-thumb:hover .art-ring, .card-thumb:hover .art-diamond, .modal-preview:hover .art-ring, .modal-preview:hover .art-diamond { stroke-opacity: .95; }
-
-  .thumb-emoji { position: absolute; top: 12px; right: 16px; font-size: 50px; line-height: 1; opacity: .2;
-    pointer-events: none; animation: floatY 6s ease-in-out infinite; transition: opacity .3s, filter .3s; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
-  @keyframes floatY { 50% { transform: translateY(-6px); } }
-  .card-thumb:hover .thumb-emoji, .modal-preview:hover .thumb-emoji { opacity: .42; }
-  .thumb-label { position: absolute; left: 15px; bottom: 12px; right: 15px; font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; line-height: 1.4; color: rgba(255,255,255,0.85); text-shadow: 0 1px 8px rgba(0,0,0,0.7);
-    pointer-events: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .thumb-label::before { content: '◆ '; color: var(--a2); opacity: .9; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .blob, .star, .art-node, .art-ring, .art-diamond, .thumb-emoji { animation: none; }
-  }
-
-  .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .badge {
-    display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600;
-    padding: 5px 11px; border-radius: 100px; background: var(--aurora-soft);
-    border: 1px solid rgba(var(--a1-rgb),0.3); color: rgba(255,255,255,0.92);
-  }
-  .badge .bdot { width: 6px; height: 6px; border-radius: 50%; background: var(--violet); }
-  .save { color: var(--faint); cursor: pointer; transition: color .18s; background:none;border:none; display:grid;place-items:center; }
-  .save:hover { color: var(--cyan); }
-
-  .card h3 { font-size: 17px; font-weight: 700; color: #fff; letter-spacing: -0.01em; margin-bottom: 9px; line-height: 1.25; }
-  .prompt-text {
-    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.55; color: var(--muted);
-    background: rgba(0,0,0,0.28); border: 1px solid var(--stroke); border-radius: 11px;
-    padding: 12px 13px; flex: 1; overflow: hidden; position: relative; margin-bottom: 14px;
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
-  }
-  .card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .ai-tags { display: flex; gap: 6px; }
-  .ai-tag {
-    font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted);
-    padding: 4px 8px; border-radius: 7px; background: var(--surface); border: 1px solid var(--stroke);
-  }
-  .copy-btn {
-    font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
-    padding: 9px 14px; border-radius: 10px; color: #fff; border: 1px solid rgba(var(--a1-rgb),0.4);
-    background: rgba(var(--a1-rgb),0.16); display: inline-flex; align-items: center; gap: 7px;
-    transition: all .18s;
-  }
-  .copy-btn:hover { background: rgba(var(--a1-rgb),0.3); border-color: rgba(var(--a1-rgb),0.7); }
-  .copy-btn.done { background: rgba(var(--a2-rgb),0.18); border-color: rgba(var(--a2-rgb),0.5); color: #aef2fb; }
-
-  /* ───────────────────────── WHY ───────────────────────── */
-  .why { padding: 80px 0 70px; }
-  .section-tag { text-align: center; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--violet); margin-bottom: 14px; }
-  .section-title { text-align: center; font-size: clamp(30px, 4vw, 46px); font-weight: 900; letter-spacing: -0.03em; color: #fff; margin-bottom: 12px; }
-  .section-lead { text-align: center; color: var(--muted); font-size: 17px; max-width: 52ch; margin: 0 auto 52px; }
-  .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-  .why-card {
-    background: linear-gradient(160deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));
-    border: 1px solid var(--stroke); border-radius: 22px; padding: 34px 30px;
-    transition: transform .28s, border-color .28s; position: relative; overflow: hidden;
-  }
-  .why-card:hover { transform: translateY(-6px); border-color: rgba(var(--a1-rgb),0.4); }
-  .why-icon {
-    width: 54px; height: 54px; border-radius: 15px; display: grid; place-items: center;
-    background: var(--aurora-soft); border: 1px solid rgba(var(--a1-rgb),0.3); color: #fff; margin-bottom: 22px;
-  }
-  .why-card h3 { font-size: 21px; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 11px; }
-  .why-card p { color: var(--muted); font-size: 15.5px; line-height: 1.6; }
-  .why-card .big { position: absolute; top: 20px; right: 26px; font-size: 56px; font-weight: 900;
-    color: rgba(255,255,255,0.04); letter-spacing: -0.04em; }
-
-  /* CTA band */
-  .cta-band { padding: 0 0 90px; }
-  .cta-inner {
-    background: var(--aurora-soft); border: 1px solid rgba(var(--a1-rgb),0.3); border-radius: 28px;
-    padding: 60px 40px; text-align: center; position: relative; overflow: hidden;
-  }
-  .cta-inner::after {
-    content:''; position:absolute; width:500px; height:500px; border-radius:50%; top:-300px; left:50%; transform:translateX(-50%);
-    background: radial-gradient(circle, rgba(var(--a2-rgb),0.3), transparent 65%); filter: blur(40px);
-  }
-  .cta-inner h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 900; letter-spacing:-0.03em; color:#fff; margin-bottom: 14px; position:relative; }
-  .cta-inner p { color: var(--muted); font-size: 17px; margin-bottom: 30px; position:relative; }
-  .cta-inner .btn-primary { font-size: 16px; padding: 15px 30px; position:relative; }
-
-  /* ───────────────────────── FOOTER ───────────────────────── */
-  footer { border-top: 1px solid var(--stroke); padding: 56px 0 40px; }
-  .foot-grid { display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; margin-bottom: 44px; }
-  .foot-brand { max-width: 320px; }
-  .foot-brand .sub { text-align: left; margin: 16px 0 0; font-size: 15px; color: var(--muted); }
-  .foot-cols { display: flex; gap: 64px; flex-wrap: wrap; }
-  .foot-col h4 { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); margin-bottom: 16px; }
-  .foot-col a { display: block; color: var(--muted); text-decoration: none; font-size: 14.5px; margin-bottom: 11px; transition: color .18s; }
-  .foot-col a:hover { color: #fff; }
-  .foot-bottom { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
-    padding-top: 26px; border-top: 1px solid var(--stroke); }
-  .foot-bottom p { color: var(--faint); font-size: 13.5px; }
-  .socials { display: flex; gap: 10px; }
-  .socials a { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
-    background: var(--surface); border: 1px solid var(--stroke); color: var(--muted); transition: all .18s; }
-  .socials a:hover { color: #fff; border-color: rgba(var(--a1-rgb),0.5); background: var(--surface-2); }
-
-  /* ───────────────────────── MODAL ───────────────────────── */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center;
-    padding: 24px; background: rgba(6,7,16,0.65); backdrop-filter: blur(10px) saturate(120%);
-    -webkit-backdrop-filter: blur(10px) saturate(120%);
-    opacity: 0; visibility: hidden; transition: opacity .38s ease, visibility .38s;
-  }
-  .modal-overlay.open { opacity: 1; visibility: visible; }
-  .modal-panel {
-    position: relative; width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto;
-    background: linear-gradient(165deg, #15172b 0%, #101124 100%);
-    border: 1px solid var(--stroke-2); border-radius: 26px; padding: 32px;
-    box-shadow: 0 40px 120px -30px rgba(0,0,0,0.8), 0 0 0 1px rgba(var(--a1-rgb),0.08);
-    transform: translateY(40px) scale(0.94); opacity: 0;
-    transition: transform .46s cubic-bezier(.22,1.1,.32,1), opacity .34s ease;
-    scrollbar-width: thin;
-  }
-  .modal-overlay.open .modal-panel { transform: translateY(0) scale(1); opacity: 1; }
-  .modal-panel::-webkit-scrollbar { width: 8px; }
-  .modal-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 8px; }
-  .modal-glow {
-    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-    width: 80%; height: 160px; pointer-events: none; border-radius: 50%;
-    background: radial-gradient(ellipse at top, rgba(var(--a1-rgb),0.4), transparent 70%); filter: blur(20px);
-  }
-  .modal-close {
-    position: absolute; top: 18px; right: 18px; width: 38px; height: 38px; z-index: 3;
-    border-radius: 11px; background: var(--surface); border: 1px solid var(--stroke); color: var(--muted);
-    cursor: pointer; display: grid; place-items: center; transition: all .18s;
-  }
-  .modal-close:hover { color: #fff; background: var(--surface-2); border-color: var(--stroke-2); transform: rotate(90deg); }
-  .modal-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; position: relative; }
-  .m-trend {
-    font-size: 11.5px; font-weight: 700; color: #ffd9a8; padding: 4px 10px; border-radius: 100px;
-    background: linear-gradient(115deg, rgba(255,138,91,0.22), rgba(245,197,66,0.18)); border: 1px solid rgba(255,138,91,0.4);
-  }
-  .modal-title { font-size: 27px; font-weight: 800; letter-spacing: -0.025em; color: #fff; line-height: 1.15; margin-bottom: 22px; padding-right: 30px; position: relative; }
-  .modal-preview { width: 100%; height: 220px; margin-bottom: 22px; border-radius: 16px; overflow: hidden; position: relative;
-    background: linear-gradient(160deg, rgba(var(--a1-rgb),0.16), rgba(var(--a2-rgb),0.06)); }
-  .modal-preview:empty { display: none; }
-  .modal-preview .thumb-emoji { font-size: 80px; top: 20px; right: 26px; }
-  .modal-label { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
-  .modal-prompt {
-    width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.65; color: var(--text);
-    background: rgba(0,0,0,0.32); border: 1px solid var(--stroke); border-radius: 14px; padding: 16px 17px;
-    resize: none; outline: none; transition: border-color .22s, box-shadow .22s, background .22s; overflow: hidden;
-  }
-  .modal-prompt[readonly] { cursor: default; }
-  .modal-prompt.editing {
-    border-color: rgba(var(--a1-rgb),0.6); box-shadow: 0 0 0 4px rgba(var(--a1-rgb),0.15);
-    background: rgba(var(--a1-rgb),0.06); cursor: text;
-  }
-  .modal-note { font-size: 13px; color: var(--faint); margin: 12px 2px 0; display: flex; align-items: center; gap: 7px; }
-  .modal-ai { display: flex; align-items: center; gap: 12px; margin: 22px 0 26px; flex-wrap: wrap; }
-  .m-ai-label { font-size: 13px; font-weight: 600; color: var(--muted); }
-  .modal-actions { display: flex; gap: 12px; }
-  .btn-ghost {
-    font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; flex: none;
-    padding: 13px 22px; border-radius: 12px; color: var(--text); background: var(--surface-2);
-    border: 1px solid var(--stroke-2); display: inline-flex; align-items: center; gap: 8px; transition: all .18s;
-  }
-  .btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.24); }
-  .btn-ghost.active { color: #fff; background: rgba(var(--a1-rgb),0.16); border-color: rgba(var(--a1-rgb),0.5); }
-  .modal-copy { flex: 1; justify-content: center; font-size: 15px; padding: 13px 22px; }
-  .modal-copy.done { background: var(--aurora); box-shadow: 0 6px 26px rgba(var(--a2-rgb),0.42); }
-
-  /* ───────────────────────── TOAST ───────────────────────── */
-  .toast {
-    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(120px);
-    background: rgba(20,22,40,0.95); border: 1px solid rgba(var(--a2-rgb),0.4); color: #fff;
-    padding: 13px 22px; border-radius: 13px; font-size: 14.5px; font-weight: 600; z-index: 100;
-    display: flex; align-items: center; gap: 10px; backdrop-filter: blur(12px);
-    box-shadow: 0 16px 50px rgba(0,0,0,0.5); transition: transform .4s cubic-bezier(.2,.9,.3,1.2);
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast svg { color: var(--cyan); }
-
-  /* reveal animation */
-  .reveal { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.3,1); }
-  .reveal.in { opacity: 1; transform: none; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .reveal { opacity: 1; transform: none; transition: none; }
-    html { scroll-behavior: auto; }
-    .btn-primary::after, .card:hover::after, h1.headline .grad, .brand .name .tld, .pill .dot { animation: none; }
-  }
-
-  /* responsive */
-  @media (max-width: 860px) {
-    .nav-links { display: none; }
-    .why-grid { grid-template-columns: 1fr; }
-    header.hero { padding: 60px 0 50px; }
-    .card { flex-basis: 290px; width: 290px; }
-    .search-bar .btn-primary span { display: none; }
-    .search-bar .btn-primary { padding: 12px 14px; }
-  }
-  @media (max-width: 540px) {
-    .wrap { padding: 0 18px; }
-    .row-head, .track { padding-left: 18px; padding-right: 18px; }
-    .foot-cols { gap: 36px; }
-  }
+:root {
+  --bg:#0a0b16;--bg-2:#0d0e1d;--surface:rgba(255,255,255,0.035);--surface-2:rgba(255,255,255,0.06);
+  --stroke:rgba(255,255,255,0.09);--stroke-2:rgba(255,255,255,0.16);
+  --text:#ECEDF6;--muted:#9A9CB8;--faint:#686A8A;
+  --a1:#7C5CFF;--a1-rgb:124,92,255;--a-mid:#5B6BFF;--a2:#22D3EE;--a2-rgb:34,211,238;
+  --violet:var(--a1);--indigo:var(--a-mid);--cyan:var(--a2);
+  --aurora:linear-gradient(115deg,var(--a1) 0%,var(--a-mid) 42%,var(--a2) 100%);
+  --aurora-soft:linear-gradient(115deg,rgba(var(--a1-rgb),0.18),rgba(var(--a2-rgb),0.14));
+  --radius:18px;--maxw:1280px;
+}
+[data-theme="cinema"]{--a1:#E11D2A;--a1-rgb:225,29,42;--a-mid:#B00C1E;--a2:#FF4242;--a2-rgb:255,66,66;--bg:#0a0708;--bg-2:#0d090a;}
+[data-theme="sunset"]{--a1:#FF5E7E;--a1-rgb:255,94,126;--a-mid:#FF7A5C;--a2:#FFB24D;--a2-rgb:255,178,77;}
+[data-theme="emerald"]{--a1:#19D58E;--a1-rgb:25,213,142;--a-mid:#16C7B4;--a2:#22D3EE;--a2-rgb:34,211,238;}
+[data-theme="rose"]{--a1:#FF5EC4;--a1-rgb:255,94,196;--a-mid:#C95CE0;--a2:#9A7CFF;--a2-rgb:154,124,255;}
+[data-theme="ocean"]{--a1:#3B82F6;--a1-rgb:59,130,246;--a-mid:#4F9DF7;--a2:#22D3EE;--a2-rgb:34,211,238;}
+@keyframes textShimmer{to{background-position:200% center;}}
+@keyframes cardShimmer{from{background-position:160% 0;}to{background-position:-60% 0;}}
+@keyframes btnShimmer{0%{left:-70%;}55%,100%{left:140%;}}
+@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(var(--a2-rgb),0);}}
+@keyframes blobFloat{to{transform:translate(var(--dx,0),var(--dy,0));}}
+@keyframes twinkle{0%,100%{opacity:.18;}50%{opacity:.8;}}
+@keyframes ringSpin{to{transform:rotate(360deg);}}
+@keyframes floatY{50%{transform:translateY(-6px);}}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;line-height:1.5;}
+::selection{background:rgba(var(--a1-rgb),0.4);color:#fff;}
+.aurora-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.aurora-bg .blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:0.5;}
+.blob.b1{width:620px;height:620px;top:-240px;left:-120px;background:radial-gradient(circle,rgba(var(--a1-rgb),0.55),transparent 65%);}
+.blob.b2{width:540px;height:540px;top:-120px;right:-160px;background:radial-gradient(circle,rgba(var(--a2-rgb),0.4),transparent 65%);}
+.blob.b3{width:480px;height:480px;top:420px;left:38%;background:radial-gradient(circle,rgba(var(--a1-rgb),0.3),transparent 68%);}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.45;background-image:radial-gradient(rgba(255,255,255,0.18) 0.5px,transparent 0.5px);background-size:3px 3px;mix-blend-mode:overlay;}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;}
+main,nav,footer{position:relative;z-index:2;}
+nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);background:rgba(10,11,22,0.55);border-bottom:1px solid transparent;transition:border-color .3s,background .3s;}
+nav.scrolled{border-bottom-color:var(--stroke);background:rgba(10,11,22,0.82);}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:70px;}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;}
+.brand .mark{width:30px;height:30px;border-radius:9px;background:var(--aurora);position:relative;box-shadow:0 4px 22px rgba(var(--a1-rgb),0.5);}
+.brand .mark::after{content:'';position:absolute;inset:7px 11px;border-radius:2px;border-left:3px solid #fff;border-bottom:3px solid #fff;border-bottom-right-radius:4px;opacity:0.95;}
+.brand .name{font-weight:800;font-size:21px;letter-spacing:-0.02em;color:#fff;}
+.brand .name .tld{background:var(--aurora);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:textShimmer 7s linear infinite;}
+.nav-links{display:flex;align-items:center;gap:34px;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:14.5px;font-weight:500;transition:color .2s;}
+.nav-links a:hover{color:#fff;}
+.btn{font-family:inherit;font-weight:600;cursor:pointer;border:none;border-radius:11px;transition:transform .15s ease,box-shadow .25s,background .25s;display:inline-flex;align-items:center;gap:9px;white-space:nowrap;}
+.btn-primary{background:var(--aurora);color:#fff;padding:11px 20px;font-size:14.5px;box-shadow:0 6px 26px rgba(var(--a1-rgb),0.42);position:relative;overflow:hidden;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 34px rgba(var(--a1-rgb),0.6);}
+.btn-primary:active{transform:translateY(0);}
+.btn-primary::after{content:'';position:absolute;top:0;left:-70%;width:45%;height:100%;pointer-events:none;z-index:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,0.3),transparent);transform:skewX(-22deg);animation:btnShimmer 4.2s ease-in-out infinite;}
+.btn-primary>*{position:relative;z-index:1;}
+.nav-cta{padding:9px 18px;}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.theme-switch{display:flex;align-items:center;gap:8px;padding-right:4px;}
+.theme-switch button{width:22px;height:22px;border-radius:50%;cursor:pointer;padding:0;border:2px solid transparent;background:transparent;position:relative;transition:transform .16s;}
+.theme-switch button .sw{position:absolute;inset:2px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.18);}
+.theme-switch button:hover{transform:scale(1.15);}
+.theme-switch button.active{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,0.18);}
+header.hero{padding:92px 0 70px;text-align:center;}
+.pill{display:inline-flex;align-items:center;gap:9px;margin-bottom:30px;padding:7px 15px 7px 11px;border-radius:100px;font-size:13px;font-weight:500;background:var(--surface);border:1px solid var(--stroke);color:var(--muted);}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 4px rgba(var(--a2-rgb),0.18);animation:pulse 2.4s ease-in-out infinite;}
+h1.headline{font-size:clamp(42px,6.6vw,86px);font-weight:900;letter-spacing:-0.035em;line-height:0.98;margin:0 auto 26px;max-width:16ch;color:#fff;}
+h1.headline .grad{background:var(--aurora);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:textShimmer 6s linear infinite;}
+.sub{font-size:clamp(17px,2vw,21px);color:var(--muted);max-width:60ch;margin:0 auto 14px;font-weight:400;}
+.subsub{font-size:15.5px;color:var(--faint);max-width:56ch;margin:0 auto 40px;}
+.search-wrap{max-width:660px;margin:0 auto 22px;position:relative;}
+.search-bar{display:flex;align-items:center;gap:4px;padding:8px 8px 8px 20px;background:var(--surface-2);border:1px solid var(--stroke-2);border-radius:16px;backdrop-filter:blur(12px);transition:border-color .25s,box-shadow .25s;}
+.search-bar:focus-within{border-color:rgba(var(--a1-rgb),0.6);box-shadow:0 0 0 4px rgba(var(--a1-rgb),0.16),0 16px 50px rgba(0,0,0,0.4);}
+.search-bar svg{flex:none;color:var(--faint);}
+.search-bar input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:inherit;font-size:16px;padding:10px 4px;}
+.search-bar input::placeholder{color:var(--faint);}
+.search-bar .btn-primary{padding:12px 22px;}
+.hint{font-size:13px;color:var(--faint);}
+.hint b{color:var(--muted);font-weight:600;}
+.chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:22px;}
+.chip{font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;padding:7px 14px;border-radius:100px;background:var(--surface);border:1px solid var(--stroke);transition:all .18s;}
+.chip:hover{color:#fff;border-color:var(--stroke-2);background:var(--surface-2);}
+.chip.active{color:#fff;background:var(--aurora-soft);border-color:rgba(var(--a1-rgb),0.5);}
+.rows-section{padding:46px 0 30px;}
+.no-results{text-align:center;color:var(--faint);padding:60px 0;font-size:16px;display:none;}
+.row{margin-bottom:50px;}
+.row-head{display:flex;align-items:baseline;gap:14px;margin-bottom:18px;padding:0 28px;max-width:var(--maxw);margin-left:auto;margin-right:auto;}
+.row-head h2{font-size:23px;font-weight:800;letter-spacing:-0.02em;color:#fff;display:flex;align-items:center;gap:11px;}
+.row-head .emoji{font-size:21px;}
+.row-head .count{font-size:13px;color:var(--faint);font-weight:500;}
+.row-head .trend{font-size:11.5px;font-weight:700;letter-spacing:0.02em;color:#ffd9a8;padding:4px 10px;border-radius:100px;background:linear-gradient(115deg,rgba(255,138,91,0.22),rgba(245,197,66,0.18));border:1px solid rgba(255,138,91,0.4);margin-left:2px;}
+.row-head .arrows{margin-left:auto;display:flex;gap:8px;}
+.arrows button{width:36px;height:36px;border-radius:10px;background:var(--surface);border:1px solid var(--stroke);color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:all .18s;}
+.arrows button:hover{color:#fff;background:var(--surface-2);border-color:var(--stroke-2);}
+.track-mask{position:relative;}
+.track{display:flex;gap:18px;overflow-x:auto;scroll-behavior:smooth;padding:6px 28px 16px;max-width:var(--maxw);margin:0 auto;scrollbar-width:none;}
+.track::-webkit-scrollbar{display:none;}
+.card{flex:0 0 340px;width:340px;min-height:252px;background:linear-gradient(160deg,rgba(255,255,255,0.06),rgba(255,255,255,0.022));border:1px solid var(--stroke);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;position:relative;overflow:hidden;cursor:pointer;transition:transform .28s cubic-bezier(.2,.7,.3,1),border-color .28s,box-shadow .28s;}
+.card::before{content:'';position:absolute;inset:0;border-radius:var(--radius);background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(var(--a1-rgb),0.16),transparent 60%);opacity:0;transition:opacity .3s;pointer-events:none;}
+.card:hover{transform:translateY(-6px);border-color:rgba(var(--a1-rgb),0.45);box-shadow:0 22px 60px -20px rgba(var(--a1-rgb),0.4),0 0 0 1px rgba(var(--a1-rgb),0.1);}
+.card:hover::before{opacity:1;}
+.card::after{content:'';position:absolute;inset:0;border-radius:var(--radius);pointer-events:none;z-index:2;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,0.13) 50%,transparent 65%);background-size:220% 100%;background-position:160% 0;opacity:0;transition:opacity .25s;}
+.card:hover::after{opacity:1;animation:cardShimmer 1.05s ease-out;}
+.card-thumb{width:100%;height:152px;margin-bottom:15px;border-radius:13px;overflow:hidden;position:relative;z-index:1;background:linear-gradient(160deg,rgba(var(--a1-rgb),0.14),rgba(var(--a2-rgb),0.05));cursor:pointer;}
+.art{display:block;width:100%;height:100%;}
+.art-bg{fill:rgba(255,255,255,0.014);}
+.gs1a{stop-color:var(--a1);stop-opacity:.55;}
+.gs0a{stop-color:var(--a1);stop-opacity:0;}
+.gs1b{stop-color:var(--a2);stop-opacity:.5;}
+.gs0b{stop-color:var(--a2);stop-opacity:0;}
+.art-parallax{transition:transform .25s cubic-bezier(.2,.7,.3,1);}
+.blob{animation:blobFloat ease-in-out infinite alternate;will-change:transform;}
+.star{fill:#fff;animation:twinkle 3s ease-in-out infinite;}
+.art-line{fill:none;stroke:var(--a2);stroke-width:.8;stroke-opacity:.26;stroke-linejoin:round;}
+.art-node{fill:var(--a2);opacity:.85;animation:twinkle 2.6s ease-in-out infinite;}
+.art-ring{fill:none;stroke:var(--a1);stroke-width:1.5;stroke-dasharray:5 7;stroke-opacity:.55;animation:ringSpin 22s linear infinite;transition:stroke-opacity .3s;}
+.art-diamond{fill:none;stroke:var(--a2);stroke-width:1.4;stroke-opacity:.5;animation:ringSpin 16s linear infinite reverse;transition:stroke-opacity .3s;}
+.card-thumb:hover .art-ring,.card-thumb:hover .art-diamond,.modal-preview:hover .art-ring,.modal-preview:hover .art-diamond{stroke-opacity:.95;}
+.thumb-emoji{position:absolute;top:12px;right:16px;font-size:50px;line-height:1;opacity:.2;pointer-events:none;animation:floatY 6s ease-in-out infinite;transition:opacity .3s,filter .3s;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3));}
+.card-thumb:hover .thumb-emoji,.modal-preview:hover .thumb-emoji{opacity:.42;}
+.thumb-label{position:absolute;left:15px;bottom:12px;right:15px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.4;color:rgba(255,255,255,0.85);text-shadow:0 1px 8px rgba(0,0,0,0.7);pointer-events:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.thumb-label::before{content:'◆ ';color:var(--a2);opacity:.9;}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:100px;background:var(--aurora-soft);border:1px solid rgba(var(--a1-rgb),0.3);color:rgba(255,255,255,0.92);}
+.badge .bdot{width:6px;height:6px;border-radius:50%;background:var(--violet);}
+.save{color:var(--faint);cursor:pointer;transition:color .18s;background:none;border:none;display:grid;place-items:center;}
+.save:hover{color:var(--cyan);}
+.card h3{font-size:17px;font-weight:700;color:#fff;letter-spacing:-0.01em;margin-bottom:9px;line-height:1.25;}
+.prompt-text{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.55;color:var(--muted);background:rgba(0,0,0,0.28);border:1px solid var(--stroke);border-radius:11px;padding:12px 13px;flex:1;overflow:hidden;position:relative;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;}
+.card-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.ai-tags{display:flex;gap:6px;}
+.ai-tag{font-size:10.5px;font-weight:600;letter-spacing:0.02em;color:var(--muted);padding:4px 8px;border-radius:7px;background:var(--surface);border:1px solid var(--stroke);}
+.copy-btn{font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:9px 14px;border-radius:10px;color:#fff;border:1px solid rgba(var(--a1-rgb),0.4);background:rgba(var(--a1-rgb),0.16);display:inline-flex;align-items:center;gap:7px;transition:all .18s;}
+.copy-btn:hover{background:rgba(var(--a1-rgb),0.3);border-color:rgba(var(--a1-rgb),0.7);}
+.copy-btn.done{background:rgba(var(--a2-rgb),0.18);border-color:rgba(var(--a2-rgb),0.5);color:#aef2fb;}
+.why{padding:80px 0 70px;}
+.section-tag{text-align:center;font-size:13px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--violet);margin-bottom:14px;}
+.section-title{text-align:center;font-size:clamp(30px,4vw,46px);font-weight:900;letter-spacing:-0.03em;color:#fff;margin-bottom:12px;}
+.section-lead{text-align:center;color:var(--muted);font-size:17px;max-width:52ch;margin:0 auto 52px;}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+.why-card{background:linear-gradient(160deg,rgba(255,255,255,0.055),rgba(255,255,255,0.02));border:1px solid var(--stroke);border-radius:22px;padding:34px 30px;transition:transform .28s,border-color .28s;position:relative;overflow:hidden;}
+.why-card:hover{transform:translateY(-6px);border-color:rgba(var(--a1-rgb),0.4);}
+.why-icon{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;background:var(--aurora-soft);border:1px solid rgba(var(--a1-rgb),0.3);color:#fff;margin-bottom:22px;}
+.why-card h3{font-size:21px;font-weight:800;color:#fff;letter-spacing:-0.02em;margin-bottom:11px;}
+.why-card p{color:var(--muted);font-size:15.5px;line-height:1.6;}
+.why-card .big{position:absolute;top:20px;right:26px;font-size:56px;font-weight:900;color:rgba(255,255,255,0.04);letter-spacing:-0.04em;}
+.cta-band{padding:0 0 90px;}
+.cta-inner{background:var(--aurora-soft);border:1px solid rgba(var(--a1-rgb),0.3);border-radius:28px;padding:60px 40px;text-align:center;position:relative;overflow:hidden;}
+.cta-inner::after{content:'';position:absolute;width:500px;height:500px;border-radius:50%;top:-300px;left:50%;transform:translateX(-50%);background:radial-gradient(circle,rgba(var(--a2-rgb),0.3),transparent 65%);filter:blur(40px);}
+.cta-inner h2{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-0.03em;color:#fff;margin-bottom:14px;position:relative;}
+.cta-inner p{color:var(--muted);font-size:17px;margin-bottom:30px;position:relative;}
+.cta-inner .btn-primary{font-size:16px;padding:15px 30px;position:relative;}
+footer{border-top:1px solid var(--stroke);padding:56px 0 40px;}
+.foot-grid{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;margin-bottom:44px;}
+.foot-brand{max-width:320px;}
+.foot-brand .sub{text-align:left;margin:16px 0 0;font-size:15px;color:var(--muted);}
+.foot-cols{display:flex;gap:64px;flex-wrap:wrap;}
+.foot-col h4{font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--faint);margin-bottom:16px;}
+.foot-col a{display:block;color:var(--muted);text-decoration:none;font-size:14.5px;margin-bottom:11px;transition:color .18s;}
+.foot-col a:hover{color:#fff;}
+.foot-bottom{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding-top:26px;border-top:1px solid var(--stroke);}
+.foot-bottom p{color:var(--faint);font-size:13.5px;}
+.socials{display:flex;gap:10px;}
+.socials a{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--stroke);color:var(--muted);transition:all .18s;}
+.socials a:hover{color:#fff;border-color:rgba(var(--a1-rgb),0.5);background:var(--surface-2);}
+.modal-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(6,7,16,0.65);backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%);opacity:0;visibility:hidden;transition:opacity .38s ease,visibility .38s;}
+.modal-overlay.open{opacity:1;visibility:visible;}
+.modal-panel{position:relative;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;background:linear-gradient(165deg,#15172b 0%,#101124 100%);border:1px solid var(--stroke-2);border-radius:26px;padding:32px;box-shadow:0 40px 120px -30px rgba(0,0,0,0.8),0 0 0 1px rgba(var(--a1-rgb),0.08);transform:translateY(40px) scale(0.94);opacity:0;transition:transform .46s cubic-bezier(.22,1.1,.32,1),opacity .34s ease;scrollbar-width:thin;}
+.modal-overlay.open .modal-panel{transform:translateY(0) scale(1);opacity:1;}
+.modal-panel::-webkit-scrollbar{width:8px;}
+.modal-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:8px;}
+.modal-glow{position:absolute;top:0;left:50%;transform:translateX(-50%);width:80%;height:160px;pointer-events:none;border-radius:50%;background:radial-gradient(ellipse at top,rgba(var(--a1-rgb),0.4),transparent 70%);filter:blur(20px);}
+.modal-close{position:absolute;top:18px;right:18px;width:38px;height:38px;z-index:3;border-radius:11px;background:var(--surface);border:1px solid var(--stroke);color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:all .18s;}
+.modal-close:hover{color:#fff;background:var(--surface-2);border-color:var(--stroke-2);transform:rotate(90deg);}
+.modal-head{display:flex;align-items:center;gap:10px;margin-bottom:18px;position:relative;}
+.m-trend{font-size:11.5px;font-weight:700;color:#ffd9a8;padding:4px 10px;border-radius:100px;background:linear-gradient(115deg,rgba(255,138,91,0.22),rgba(245,197,66,0.18));border:1px solid rgba(255,138,91,0.4);}
+.modal-title{font-size:27px;font-weight:800;letter-spacing:-0.025em;color:#fff;line-height:1.15;margin-bottom:22px;padding-right:30px;position:relative;}
+.modal-preview{width:100%;height:220px;margin-bottom:22px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(160deg,rgba(var(--a1-rgb),0.16),rgba(var(--a2-rgb),0.06));}
+.modal-preview:empty{display:none;}
+.modal-preview .thumb-emoji{font-size:80px;top:20px;right:26px;}
+.modal-label{display:block;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--faint);margin-bottom:10px;}
+.modal-prompt{width:100%;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.65;color:var(--text);background:rgba(0,0,0,0.32);border:1px solid var(--stroke);border-radius:14px;padding:16px 17px;resize:none;outline:none;transition:border-color .22s,box-shadow .22s,background .22s;overflow:hidden;}
+.modal-prompt[readonly]{cursor:default;}
+.modal-prompt.editing{border-color:rgba(var(--a1-rgb),0.6);box-shadow:0 0 0 4px rgba(var(--a1-rgb),0.15);background:rgba(var(--a1-rgb),0.06);cursor:text;}
+.modal-note{font-size:13px;color:var(--faint);margin:12px 2px 0;display:flex;align-items:center;gap:7px;}
+.modal-ai{display:flex;align-items:center;gap:12px;margin:22px 0 26px;flex-wrap:wrap;}
+.m-ai-label{font-size:13px;font-weight:600;color:var(--muted);}
+.modal-actions{display:flex;gap:12px;}
+.btn-ghost{font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;flex:none;padding:13px 22px;border-radius:12px;color:var(--text);background:var(--surface-2);border:1px solid var(--stroke-2);display:inline-flex;align-items:center;gap:8px;transition:all .18s;}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.24);}
+.btn-ghost.active{color:#fff;background:rgba(var(--a1-rgb),0.16);border-color:rgba(var(--a1-rgb),0.5);}
+.modal-copy{flex:1;justify-content:center;font-size:15px;padding:13px 22px;}
+.modal-copy.done{background:var(--aurora);box-shadow:0 6px 26px rgba(var(--a2-rgb),0.42);}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(120px);background:rgba(20,22,40,0.95);border:1px solid rgba(var(--a2-rgb),0.4);color:#fff;padding:13px 22px;border-radius:13px;font-size:14.5px;font-weight:600;z-index:100;display:flex;align-items:center;gap:10px;backdrop-filter:blur(12px);box-shadow:0 16px 50px rgba(0,0,0,0.5);transition:transform .4s cubic-bezier(.2,.9,.3,1.2);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast svg{color:var(--cyan);}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.3,1);}
+.reveal.in{opacity:1;transform:none;}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none;}html{scroll-behavior:auto;}.btn-primary::after,.card:hover::after,h1.headline .grad,.brand .name .tld,.pill .dot{animation:none;}}
+@media(max-width:860px){.nav-links{display:none;}.why-grid{grid-template-columns:1fr;}header.hero{padding:60px 0 50px;}.card{flex-basis:290px;width:290px;}.search-bar .btn-primary span{display:none;}.search-bar .btn-primary{padding:12px 14px;}}
+@media(max-width:540px){.wrap{padding:0 18px;}.row-head,.track{padding-left:18px;padding-right:18px;}.foot-cols{gap:36px;}}
 </style>
 </head>
 <body>
-  <div class="aurora-bg">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="blob b3"></div>
-  </div>
-  <div class="grain"></div>
-
-  <!-- NAV -->
-  <nav id="nav">
-    <div class="wrap nav-inner">
-      <a href="#" class="brand">
-        <span class="mark"></span>
-        <span class="name">promptflix<span class="tld">.in</span></span>
-      </a>
-      <div class="nav-links">
-        <a href="#rows">Browse</a>
-        <a href="#roles">By Role</a>
-        <a href="#why">Why us</a>
-        <a href="#footer">About</a>
-      </div>
-      <div class="nav-right">
-        <div class="theme-switch" id="themeSwitch" role="group" aria-label="Accent theme"></div>
-        <button class="btn btn-primary nav-cta" onclick="document.getElementById('search').focus()">Explore Prompts</button>
-      </div>
+<div class="aurora-bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<div class="grain"></div>
+<nav id="nav">
+  <div class="wrap nav-inner">
+    <a href="#" class="brand"><span class="mark"></span><span class="name">promptflix<span class="tld">.in</span></span></a>
+    <div class="nav-links">
+      <a href="#rows">Browse</a>
+      <a href="#why">Why us</a>
+      <a href="https://github.com/echobash/promptflix" target="_blank" rel="noopener">GitHub</a>
+      <a href="mailto:ali@promptflix.in">Contact</a>
     </div>
-  </nav>
-
-  <main>
-    <!-- HERO -->
-    <header class="hero">
-      <div class="wrap">
-        <span class="pill reveal"><span class="dot"></span>&nbsp;<b>4,200+</b>&nbsp;curated prompts · no signup, ever</span>
-        <h1 class="headline reveal">The right prompt for the <span class="grad">right person</span>, instantly.</h1>
-        <p class="sub reveal">From curious kids to Fortune 500 CEOs — find your perfect GenAI prompt in seconds, organized by exactly who you are.</p>
-
-        <div class="search-wrap reveal">
-          <div class="search-bar">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            <input id="search" type="text" placeholder="Search prompts by role, tool, or use case…" autocomplete="off" />
-            <button class="btn btn-primary"><span>Explore Prompts — It's Free</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
-          </div>
-        </div>
-        <p class="hint reveal">Try <b>“IPL stadium photo”</b>, <b>“3D figurine”</b>, <b>“lesson plan”</b> or <b>“pitch deck”</b></p>
-
-        <div class="chips reveal" id="chips"></div>
-      </div>
-    </header>
-
-    <!-- ROLE ROWS -->
-    <section class="rows-section" id="rows">
-      <div id="roleRows"></div>
-      <div class="no-results" id="noResults">No prompts match your search. Try another keyword or pick a role above.</div>
-    </section>
-
-    <!-- WHY -->
-    <section class="why" id="why">
-      <div class="wrap">
-        <p class="section-tag reveal">Why promptflix</p>
-        <h2 class="section-title reveal">Built for everyone. Gated for no one.</h2>
-        <p class="section-lead reveal">No accounts, no paywalls, no friction. Just the best prompt for whoever you are — ready to copy and run.</p>
-        <div class="why-grid">
-          <div class="why-card reveal">
-            <span class="big">01</span>
-            <div class="why-icon">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"></path></svg>
-            </div>
-            <h3>Zero signup</h3>
-            <p>No email, no password, no "verify your account." Land, search, copy, go. Your perfect prompt is three clicks away — always.</p>
-          </div>
-          <div class="why-card reveal">
-            <span class="big">02</span>
-            <div class="why-icon">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-            </div>
-            <h3>100% free</h3>
-            <p>Every prompt, every role, every tool — completely free, forever. No "pro tier," no locked cards, no credits to burn.</p>
-          </div>
-          <div class="why-card reveal">
-            <span class="big">03</span>
-            <div class="why-icon">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
-            </div>
-            <h3>Organized by who you are</h3>
-            <p>Not a giant unsorted dump. Prompts are curated by role and use case, so a teacher and a CTO each find their fit in seconds.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="cta-band">
-      <div class="wrap">
-        <div class="cta-inner reveal">
-          <h2>Your next great prompt is one search away.</h2>
-          <p>Join thousands discovering better GenAI prompts every day — no strings attached.</p>
-          <button class="btn btn-primary" onclick="document.getElementById('search').focus(); window.scrollTo({top:0,behavior:'smooth'})">Explore Prompts — It's Free</button>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- FOOTER -->
-  <footer id="footer">
+    <div class="nav-right">
+      <div class="theme-switch" id="themeSwitch" role="group" aria-label="Accent theme"></div>
+      <button class="btn btn-primary nav-cta" onclick="document.getElementById('search').focus()">Explore Prompts</button>
+    </div>
+  </div>
+</nav>
+<main>
+  <header class="hero">
     <div class="wrap">
-      <div class="foot-grid">
-        <div class="foot-brand">
-          <a href="#" class="brand">
-            <span class="mark"></span>
-            <span class="name">promptflix<span class="tld">.in</span></span>
-          </a>
-          <p class="sub">The right prompt for the right person, instantly. From curious kids to Fortune 500 CEOs — find your perfect GenAI prompt in seconds.</p>
-        </div>
-        <div class="foot-cols">
-          <div class="foot-col">
-            <h4>Browse</h4>
-            <a href="#rows">Students</a>
-            <a href="#rows">Developers</a>
-            <a href="#rows">Designers</a>
-            <a href="#rows">Founders & CEOs</a>
-          </div>
-          <div class="foot-col">
-            <h4>Platform</h4>
-            <a href="#why">Why promptflix</a>
-            <a href="#rows">All prompts</a>
-            <a href="#">Submit a prompt</a>
-            <a href="#">Changelog</a>
-          </div>
-          <div class="foot-col">
-            <h4>Company</h4>
-            <a href="#">About</a>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Contact</a>
-          </div>
+      <span class="pill reveal"><span class="dot"></span>&nbsp;<b>300+</b>&nbsp;curated prompts · no signup, ever</span>
+      <h1 class="headline reveal">The right prompt for the <span class="grad">right person</span>, instantly.</h1>
+      <p class="sub reveal">From curious kids to Fortune 500 CEOs — find your perfect GenAI prompt in seconds, organized by exactly who you are.</p>
+      <div class="search-wrap reveal">
+        <div class="search-bar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input id="search" type="text" placeholder="Search prompts by role, tool, or use case…" autocomplete="off" />
+          <button class="btn btn-primary"><span>Explore — It's Free</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
         </div>
       </div>
-      <div class="foot-bottom">
-        <p>© 2026 promptflix.in — Made for everyone who prompts.</p>
-        <div class="socials">
-          <a href="#" aria-label="X"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"></path></svg></a>
-          <a href="#" aria-label="LinkedIn"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14Zm-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79ZM6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68Zm1.39 9.94v-8.37H5.5v8.37h2.77Z"></path></svg></a>
-          <a href="#" aria-label="GitHub"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 0 0 8.84 21.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02a9.58 9.58 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5A10 10 0 0 0 12 2Z"></path></svg></a>
+      <p class="hint reveal">Try <b>"pitch deck"</b>, <b>"debug code"</b>, <b>"lesson plan"</b> or <b>"LinkedIn post"</b></p>
+      <div class="chips reveal" id="chips"></div>
+    </div>
+  </header>
+  <section class="rows-section" id="rows">
+    <div id="roleRows"></div>
+    <div class="no-results" id="noResults">No prompts match your search. Try another keyword or pick a role above.</div>
+  </section>
+  <section class="why" id="why">
+    <div class="wrap">
+      <p class="section-tag reveal">Why promptflix</p>
+      <h2 class="section-title reveal">Built for everyone. Gated for no one.</h2>
+      <p class="section-lead reveal">No accounts, no paywalls, no friction. Just the best prompt for whoever you are — ready to copy and run.</p>
+      <div class="why-grid">
+        <div class="why-card reveal"><span class="big">01</span><div class="why-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"></path></svg></div><h3>Zero signup</h3><p>No email, no password, no "verify your account." Land, search, copy, go. Your perfect prompt is three clicks away — always.</p></div>
+        <div class="why-card reveal"><span class="big">02</span><div class="why-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></div><h3>100% free</h3><p>Every prompt, every role, every tool — completely free, forever. No "pro tier," no locked cards, no credits to burn.</p></div>
+        <div class="why-card reveal"><span class="big">03</span><div class="why-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></div><h3>Organized by who you are</h3><p>Not a giant unsorted dump. Prompts are curated by role and use case, so a teacher and a CTO each find their fit in seconds.</p></div>
+      </div>
+    </div>
+  </section>
+  <section class="cta-band">
+    <div class="wrap">
+      <div class="cta-inner reveal">
+        <h2>Your next great prompt is one search away.</h2>
+        <p>Free forever. No signup. Just copy and go.</p>
+        <button class="btn btn-primary" onclick="document.getElementById('search').focus();window.scrollTo({top:0,behavior:'smooth'})">Explore Prompts — It's Free</button>
+      </div>
+    </div>
+  </section>
+</main>
+<footer id="footer">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="#" class="brand"><span class="mark"></span><span class="name">promptflix<span class="tld">.in</span></span></a>
+        <p class="sub">The right prompt for the right person, instantly. Free, forever, no signup.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h4>Browse</h4>
+          <a href="#rows">Developers</a>
+          <a href="#rows">Founders</a>
+          <a href="#rows">Creators</a>
+          <a href="#rows">Students</a>
+        </div>
+        <div class="foot-col">
+          <h4>Platform</h4>
+          <a href="#why">Why promptflix</a>
+          <a href="#rows">All prompts</a>
+          <a href="https://github.com/echobash/promptflix/issues" target="_blank" rel="noopener">Submit a prompt</a>
+          <a href="https://github.com/echobash/promptflix/commits/main" target="_blank" rel="noopener">Changelog</a>
+        </div>
+        <div class="foot-col">
+          <h4>Connect</h4>
+          <a href="https://github.com/echobash/promptflix" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://twitter.com/alianwar_rocker" target="_blank" rel="noopener">Twitter / X</a>
+          <a href="mailto:ali@promptflix.in">Contact</a>
         </div>
       </div>
     </div>
-  </footer>
-
-  <!-- PROMPT MODAL -->
-  <div class="modal-overlay" id="modal" aria-hidden="true">
-    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="mTitle">
-      <div class="modal-glow"></div>
-      <button class="modal-close" id="modalClose" aria-label="Close">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
-      </button>
-      <div class="modal-head">
-        <span class="badge"><span class="bdot"></span><span id="mBadge">Role</span></span>
-        <span class="m-trend" id="mTrend" hidden>🔥 Trending</span>
-      </div>
-      <h2 class="modal-title" id="mTitle">Prompt title</h2>
-      <div class="modal-preview" id="mPreview"></div>
-      <span class="modal-label">The Prompt</span>
-      <textarea class="modal-prompt" id="mPrompt" readonly spellcheck="false"></textarea>
-      <p class="modal-note">💡 <span>Tip: replace the <b style="color:var(--muted)">[BRACKETS]</b> with your own details before running.</span></p>
-      <div class="modal-ai">
-        <span class="m-ai-label">Works with</span>
-        <div class="ai-tags" id="mTags"></div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-ghost" id="mEdit">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-          <span id="mEditLabel">Edit</span>
-        </button>
-        <button class="btn btn-primary modal-copy" id="mCopy">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-          <span id="mCopyLabel">Copy prompt</span>
-        </button>
+    <div class="foot-bottom">
+      <p>© 2026 promptflix.in — Made for everyone who prompts.</p>
+      <div class="socials">
+        <a href="https://twitter.com/alianwar_rocker" target="_blank" rel="noopener" aria-label="X / Twitter"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"></path></svg></a>
+        <a href="https://linkedin.com/in/echobash" target="_blank" rel="noopener" aria-label="LinkedIn"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14Zm-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79ZM6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68Zm1.39 9.94v-8.37H5.5v8.37h2.77Z"></path></svg></a>
+        <a href="https://github.com/echobash" target="_blank" rel="noopener" aria-label="GitHub"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 0 0 8.84 21.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02a9.58 9.58 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5A10 10 0 0 0 12 2Z"></path></svg></a>
       </div>
     </div>
   </div>
-
-  <div class="toast" id="toast">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-    <span>Prompt copied to clipboard</span>
+</footer>
+<div class="modal-overlay" id="modal" aria-hidden="true">
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-glow"></div>
+    <button class="modal-close" id="modalClose" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+    <div class="modal-head"><span class="badge"><span class="bdot"></span><span id="mBadge">Role</span></span><span class="m-trend" id="mTrend" hidden>🔥 Trending</span></div>
+    <h2 class="modal-title" id="mTitle">Prompt title</h2>
+    <div class="modal-preview" id="mPreview"></div>
+    <span class="modal-label">The Prompt</span>
+    <textarea class="modal-prompt" id="mPrompt" readonly spellcheck="false"></textarea>
+    <p class="modal-note">💡 <span>Tip: replace the <b style="color:var(--muted)">[BRACKETS]</b> with your own details before running.</span></p>
+    <div class="modal-ai"><span class="m-ai-label">Works with</span><div class="ai-tags" id="mTags"></div></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="mEdit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg><span id="mEditLabel">Edit</span></button>
+      <button class="btn btn-primary modal-copy" id="mCopy"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span id="mCopyLabel">Copy prompt</span></button>
+    </div>
   </div>
+</div>
+<div class="toast" id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg><span>Prompt copied to clipboard</span></div>
+<script>
+const ROLES = [
+  { id:'viral-image', label:'Viral AI Images', emoji:'🪄', trending:true, prompts:[
+    { title:'Action figure of me in a box', text:'Turn [UPLOAD] into a premium boxed action figure toy. Accessories beside it: [laptop / coffee / mic / etc]. Packaging label reads "[YOUR NAME] — [EDITION NAME]". Retail store lighting, hyper-detailed product photography.', ai:['ChatGPT','Midjourney','Nano Banana'] },
+    { title:'Roast-me caricature', text:'Create a caricature of me based on everything you know about me from this photo [UPLOAD]. Exaggerate my most distinct features into a funny cartoon. Keep it roast-worthy but affectionate.', ai:['ChatGPT','Midjourney'] },
+    { title:'Childhood photo of me', text:'Reimagine [UPLOAD] as a photo of this person at age 7. Same facial structure, childhood-appropriate clothing, 1990s or early 2000s photo aesthetic, slight grain, natural indoor or backyard setting.', ai:['ChatGPT','Nano Banana'] },
+    { title:'Cinematic LinkedIn headshot', text:'Create a professional LinkedIn portrait of [UPLOAD]. Formal attire, diffused studio lighting, neutral gradient background, shallow depth of field, eyes sharp, skin tones natural. Clean, approachable, corporate-appropriate.', ai:['ChatGPT','Nano Banana','Midjourney'] },
+    { title:'3D collectible figurine', text:'Turn [UPLOAD] into a 1/7 scale 3D collectible figurine on a round base, displayed in a clear blister-pack box, soft studio lighting, hyper-detailed, product photography style.', ai:['Midjourney','Nano Banana'] },
+    { title:'Polaroid with my idol', text:'A candid Polaroid-style photo of [ME] standing next to [CELEBRITY], slight motion blur, direct flash, both smiling, casual setting, ultra-realistic, looks like a real fan photo from a phone.', ai:['ChatGPT','Nano Banana'] },
+    { title:'Retro Bollywood portrait', text:'Transform [UPLOAD] into a nostalgic 1990s Bollywood film poster portrait — warm grain, soft glow, vintage saree/sherwani styling, dramatic studio backdrop, hand-painted poster aesthetic.', ai:['Midjourney','Ideogram'] },
+    { title:'Chibi anime version of me', text:'Turn [UPLOAD] into a cute chibi anime character. Keep my outfit and hair colour. Big expressive eyes, soft shading, pastel background, clean linework. Style: Studio Ghibli-adjacent.', ai:['Midjourney','ChatGPT'] },
+    { title:'IPL stadium front row shot', text:'A hyper-realistic photo of [ME] sitting front row at a packed IPL cricket stadium at night, floodlights glowing, crowd blurred, wearing a team jersey, cinematic depth of field, 85mm lens.', ai:['Nano Banana','Midjourney'] },
+    { title:'Scrapbook collage portrait', text:'A warm moody scrapbook-style collage of [UPLOAD]. Multiple overlapping printed portrait photos of the same person, handwritten notes, washi tape, dried flowers, film grain, golden hour tones.', ai:['ChatGPT','Midjourney'] },
+    { title:'Cinematic video — drone flyover', text:'A smooth aerial drone shot flying over [CITY/LANDMARK] at sunrise. Golden light, gentle push-in, volumetric clouds, cinematic colour grade, 5-second seamless loop.', ai:['Sora','Veo','Kling'] },
+    { title:'MS Paint doodle art', text:'Recreate [UPLOAD/SCENE] in the style of MS Paint doodles — intentionally rough, primary colours, pixelated, childlike strokes. Nostalgic internet aesthetic from the early 2000s.', ai:['ChatGPT','Ideogram'] },
+    { title:'Couple Polaroid', text:'Combine these two portrait photos into one Polaroid image where two people are hugging. Warm nostalgic colour, light grain, slight light decay, vintage Polaroid frame. Natural, cozy, candid.', ai:['ChatGPT','Nano Banana'] },
+    { title:'Pet as a human', text:'Reimagine my [BREED] as a human. Give them a matching personality outfit, friendly facial expression, and place them in a setting that suits their energy (park, office, coffee shop). Ultra-realistic.', ai:['Midjourney','ChatGPT'] },
+    { title:'Soft girl aesthetic portrait', text:'Edit [UPLOAD] into a soft girl aesthetic: pastel pink and lavender tones, glowy skin, cute hair clips, dreamy bokeh background, ethereal lighting. Instagram-ready, feminine, minimal makeup look.', ai:['ChatGPT','Nano Banana'] },
+    { title:'Futuristic city poster', text:'Generate a cinematic poster of [CITY] in 2087. Flying vehicles, neon holograms, towering arcology skyscrapers, foggy night atmosphere, Blade Runner lighting but with Indian urban elements.', ai:['Midjourney','Ideogram'] },
+    { title:'Golden hour engagement portrait', text:'An engagement-style portrait of a couple in a natural setting, golden hour, soft bokeh background, warm romantic lighting, natural poses, small lens flares, hazy soft teal/orange colour grading.', ai:['ChatGPT','Midjourney'] },
+    { title:'Historical era portrait', text:'Reimagine [UPLOAD] as a painted portrait from [ERA: Renaissance / Victorian / Mughal]. Oil painting texture, era-appropriate clothing, dramatic studio lighting, museum-quality composition.', ai:['Midjourney','ChatGPT'] },
+    { title:'Talking avatar ad (video)', text:'A 6-second cinematic ad: [PRODUCT] on a rotating pedestal, soft studio lighting, dynamic camera orbit, dramatic reflections, then a clean logo reveal. Smooth, premium, modern.', ai:['Sora','Veo','Runway'] },
+    { title:'Night glow portrait', text:'Edit [UPLOAD] to have a cinematic night glow effect: neon city lights reflecting on face, rain-slicked street background, shallow depth of field, dramatic backlight halo. Moody, editorial, gorgeous.', ai:['ChatGPT','Nano Banana'] },
+  ]},
+  { id:'developers', label:'Developers', emoji:'💻', trending:true, prompts:[
+    { title:'Explain this code, then refactor it', text:'Explain what this code does step by step, flag any bugs or edge cases, then refactor it for readability and performance: [PASTE CODE]', ai:['Claude','ChatGPT'] },
+    { title:'Debug a stack trace', text:'I\'m getting this error: [PASTE STACK TRACE]. Here is the relevant code: [PASTE]. Diagnose the root cause and give me the exact fix with explanation.', ai:['Claude','ChatGPT','Gemini'] },
+    { title:'SQL from plain English', text:'I have these tables: [SCHEMA]. Write an optimized SQL query that [GOAL]. Explain the joins, indexes that would speed it up, and any edge cases to handle.', ai:['Claude','Gemini'] },
+    { title:'Write a full test suite', text:'Write a comprehensive unit test suite for this function covering happy paths, edge cases, null inputs, and failure modes. Use [Jest/PHPUnit/pytest]: [PASTE FUNCTION]', ai:['Claude','ChatGPT'] },
+    { title:'Design a clean REST API', text:'Design a RESTful API for [FEATURE]. Include endpoints, HTTP methods, request/response JSON shapes, status codes, auth strategy, and rate limiting considerations.', ai:['Claude','Gemini'] },
+    { title:'Code review as a senior engineer', text:'Act as a senior engineer doing a code review. Review this PR for correctness, security issues, performance, readability, and test coverage. Be direct and specific: [PASTE CODE]', ai:['Claude','ChatGPT'] },
+    { title:'Architecture decision record', text:'Write an ADR for choosing [TECHNOLOGY/APPROACH] over [ALTERNATIVE] for [USE CASE]. Include context, decision, consequences, alternatives considered, and trade-offs.', ai:['Claude','ChatGPT'] },
+    { title:'Regex from plain English', text:'Write a regex pattern that matches [DESCRIBE WHAT IT SHOULD MATCH] and does not match [DESCRIBE WHAT IT SHOULD EXCLUDE]. Explain each part and give me test cases.', ai:['ChatGPT','Claude'] },
+    { title:'Docker setup for my stack', text:'Write a production-ready Dockerfile and docker-compose.yml for a [STACK: Laravel/Node/Django] app with [SERVICES: MySQL, Redis, Nginx]. Include health checks and volume mounts.', ai:['Claude','ChatGPT'] },
+    { title:'Security audit of this code', text:'Act as a security auditor. Review this code for OWASP Top 10 vulnerabilities — SQL injection, XSS, IDOR, auth issues, exposed secrets. Rank issues by severity with fixes: [PASTE]', ai:['Claude','ChatGPT'] },
+    { title:'CI/CD pipeline config', text:'Write a GitHub Actions workflow for a [LANGUAGE] project that runs tests, lints, builds a Docker image, and deploys to [AWS/GCP/Fly.io] on push to main.', ai:['Claude','ChatGPT'] },
+    { title:'Convert this to async/await', text:'Refactor this callback-based or Promise.then() code to clean async/await with proper error handling and no nested hell: [PASTE CODE]', ai:['ChatGPT','Claude'] },
+    { title:'Performance bottleneck analysis', text:'Analyze this code or query for performance bottlenecks. Identify N+1 queries, missing indexes, memory leaks, or algorithmic inefficiencies. Give me a prioritized fix list: [PASTE]', ai:['Claude','Gemini'] },
+    { title:'Write a README from scratch', text:'Write a professional README.md for this project: [DESCRIBE PROJECT]. Include badges, overview, installation, usage examples, environment variables, contributing guide, and license section.', ai:['ChatGPT','Claude'] },
+    { title:'Turn comments into docs', text:'Take this code with inline comments and generate clean API documentation in [JSDoc/PHPDoc/OpenAPI] format with parameter types, return values, and usage examples: [PASTE]', ai:['Claude','ChatGPT'] },
+    { title:'Algorithm walkthrough', text:'Explain the [ALGORITHM: Dijkstra/BFS/merge sort/etc] step by step using a concrete visual example. Then implement it in [LANGUAGE] with comments explaining each step.', ai:['Claude','ChatGPT','Gemini'] },
+    { title:'Cron job expression', text:'I need a cron job that runs [DESCRIBE SCHEDULE]. Write the cron expression, explain each field, and show me how to set it up in [Linux/Laravel Scheduler/GitHub Actions].', ai:['Claude','ChatGPT'] },
+    { title:'System design interview answer', text:'Walk me through a system design for [e.g. URL shortener / ride-sharing / notification system]. Cover requirements, high-level design, database schema, scaling strategy, and bottlenecks.', ai:['Claude','ChatGPT'] },
+    { title:'Fix my Dockerfile', text:'This Dockerfile is [too slow to build / not working / producing a huge image]: [PASTE]. Diagnose the issues and give me a fixed, optimized version with layer caching in mind.', ai:['Claude','ChatGPT'] },
+    { title:'DSA problem walkthrough', text:'Walk me through solving [PROBLEM TYPE: two-pointer / sliding window / DP] problems. Explain the pattern, give me a template, then apply it to this specific problem: [PASTE]', ai:['Claude','ChatGPT'] },
+  ]},
+  { id:'founders', label:'Founders & CEOs', emoji:'🚀', prompts:[
+    { title:'Validate my startup idea fast', text:'Act as a skeptical VC. Analyze this startup idea: [DESCRIBE]. Break down: target audience, market size, competitors, moat, biggest risks, and give me a verdict — pursue or pivot.', ai:['Claude','ChatGPT'] },
+    { title:'10-slide pitch deck narrative', text:'I am raising [AMOUNT] for [STARTUP doing X]. Draft a 10-slide pitch narrative: problem, solution, market size, traction, business model, team, competition, go-to-market, financials, the ask.', ai:['Claude','ChatGPT'] },
+    { title:'Investor update email', text:'Write a concise monthly investor update. Metrics: [PASTE]. Sections: TL;DR, wins, challenges, asks, runway. Confident but honest tone. Under 300 words.', ai:['ChatGPT','Claude'] },
+    { title:'Pressure-test my strategy', text:'Act as a skeptical board member. Pressure-test this strategy: [PASTE]. Surface the 3 biggest risks, 2 assumptions you are making that could be wrong, and what would make you say no.', ai:['Claude','Gemini'] },
+    { title:'One-sentence positioning', text:'Give me 5 one-sentence positioning statements for [PRODUCT] in the format: "For [audience] who [need], [product] is the [category] that [benefit], unlike [alternative]."', ai:['ChatGPT','Claude'] },
+    { title:'Competitor analysis table', text:'Compare my product [DESCRIBE] against [COMPETITOR 1], [COMPETITOR 2], [COMPETITOR 3]. Table format: pricing, core features, weaknesses, target customer, go-to-market. Identify my gap to exploit.', ai:['Claude','Gemini'] },
+    { title:'Job description that attracts A-players', text:'Write a compelling, inclusive job description for a [ROLE] at a [STAGE] startup. Include mission context, what they will own, must-haves, nice-to-haves, and a culture blurb that attracts doers.', ai:['ChatGPT','Claude'] },
+    { title:'Sales page that converts', text:'Act as a direct response copywriter. Write a sales page for [PRODUCT]. Structure: headline, problem, agitation, solution, benefits, social proof, offer, and CTA. Under 600 words.', ai:['ChatGPT','Claude'] },
+    { title:'30-day go-to-market plan', text:'Build a 30-day go-to-market plan for [PRODUCT] targeting [AUDIENCE]. Include acquisition channels, content strategy, partnerships, launch sequence, and day-by-day milestones.', ai:['Claude','Gemini'] },
+    { title:'Email sequence for leads', text:'Write a 5-email drip sequence for [PRODUCT/SERVICE] targeting [AUDIENCE WHO HAS NOT RESPONDED]. Each email under 150 words. Escalate urgency. Close on email 5.', ai:['ChatGPT','Claude'] },
+    { title:'Board meeting prep', text:'I have a board meeting in [X days]. Key metrics: [PASTE]. Help me prepare a 20-minute narrative covering: performance vs plan, what changed, key decisions needed, and forward guidance.', ai:['Claude','ChatGPT'] },
+    { title:'SWOT analysis', text:'Run a SWOT analysis for [BUSINESS/PRODUCT] in [MARKET]. Be specific — not generic platitudes. For each weakness and threat, add one actionable mitigation.', ai:['Claude','Gemini','ChatGPT'] },
+    { title:'Pricing strategy', text:'Generate 5 pricing strategies for [PRODUCT]. For each: the model, the logic, who it works for, expected conversion impact, and revenue ceiling. Then recommend which fits [MY STAGE].', ai:['Claude','ChatGPT'] },
+    { title:'Cold outreach that gets replies', text:'Write 3 cold outreach emails to [TARGET: investors / enterprise buyers / partners]. Each under 100 words. Lead with their pain point, not your product. Include a low-friction CTA.', ai:['ChatGPT','Claude'] },
+    { title:'OKRs for next quarter', text:'Help me set OKRs for Q[X] for a [TEAM: engineering / growth / sales] team. Goals: [DESCRIBE]. Write 3 objectives, each with 3 measurable key results. Ambitious but achievable.', ai:['Claude','ChatGPT'] },
+    { title:'Series A readiness audit', text:'Act as a Series A investor. Audit my startup for readiness: [DESCRIBE METRICS, TEAM, PRODUCT]. What are the top 3 things holding me back and what does "fixed" look like for each?', ai:['Claude','Gemini'] },
+    { title:'Customer persona deep-dive', text:'Help me define my ideal customer persona for [PRODUCT]. Ask me 5 questions first, then build a persona including: demographics, goals, frustrations, buying triggers, and where they hang out online.', ai:['Claude','ChatGPT'] },
+    { title:'Rewrite my mission statement', text:'My current mission: "[PASTE]". Rewrite it 5 ways — from most corporate to most audacious. Then recommend which one a [STAGE] company should use and why.', ai:['ChatGPT','Claude'] },
+    { title:'Monetization audit', text:'Suggest 5 ways to monetize [WEBSITE/PRODUCT/AUDIENCE]. For each: revenue model, difficulty to implement, estimated monthly potential, and time to first dollar.', ai:['Claude','ChatGPT'] },
+    { title:'Fundraising narrative', text:'Help me build a fundraising narrative for [COMPANY]. Current state: [METRICS]. Craft the story arc from problem → insight → traction → vision in a way that creates urgency for investors.', ai:['Claude','ChatGPT'] },
+  ]},
+  { id:'marketing', label:'Marketing & Growth', emoji:'📈', trending:true, prompts:[
+    { title:'30-day content calendar', text:'Create a 30-day content calendar for a [NICHE] brand on [PLATFORM]. Mix formats: educational, behind-the-scenes, hot takes, case studies, engagement posts. Include suggested posting times.', ai:['ChatGPT','Gemini'] },
+    { title:'SEO blog post', text:'You are a senior content writer. Write a 1,500-word SEO blog post on [TOPIC]. Audience: [TARGET READER]. Tone: conversational and direct. No "In today\'s world" openers. Include 3 real-world examples, 4–5 headers, short paragraphs.', ai:['ChatGPT','Claude'] },
+    { title:'10 viral hooks for any topic', text:'Write 10 scroll-stopping hooks for content about [TOPIC]. Make them punchy and curiosity-driven, under 12 words. Mix formats: question, bold claim, surprising stat, "unpopular opinion", and story-open.', ai:['Claude','ChatGPT'] },
+    { title:'Facebook ad copy (5 variants)', text:'Act as a direct response copywriter. Write 5 Facebook ad copies for [PRODUCT]. Each under 150 words. Strong hooks, pain points, benefits, clear CTA. Vary tone: urgency, social proof, FOMO, curiosity, direct.', ai:['ChatGPT','Claude'] },
+    { title:'Email subject lines that get opened', text:'Write 15 email subject lines for [EMAIL ABOUT]. Mix: curiosity gaps, personalisation, urgency, questions, and controversy. Flag which work best for B2B vs B2C.', ai:['ChatGPT','Claude'] },
+    { title:'Repurpose one piece into 5 formats', text:'Here is my [blog post / video transcript / tweet thread]: [PASTE]. Repurpose it into: a LinkedIn post, an Instagram caption, a newsletter blurb, a Twitter/X thread, and a short video script.', ai:['Claude','Gemini'] },
+    { title:'YouTube title + thumbnail text', text:'Generate 8 high-CTR YouTube titles and 3-word thumbnail text for a video about [TOPIC]. Avoid misleading clickbait. Aim for curiosity + clear value. Flag which would perform best for a [NICHE] channel.', ai:['ChatGPT','Gemini'] },
+    { title:'Landing page copy', text:'Write landing page copy for [PRODUCT]. Structure: hero headline, sub-headline, 3 benefit blocks, social proof section, FAQ (3 questions), and a CTA. Audience: [DESCRIBE]. Tone: [DESCRIBE].', ai:['Claude','ChatGPT'] },
+    { title:'Full SEO strategy', text:'Create a full SEO strategy for a [NICHE] website. Include: keyword clusters, content pillars, on-page checklist, link building approach, and a 90-day priority roadmap.', ai:['ChatGPT','Gemini'] },
+    { title:'Influencer outreach DM', text:'Write 3 DM templates to pitch collaboration to [NICHE] creators with [AUDIENCE SIZE]. Under 80 words each. Lead with genuine compliment, then value-first pitch. No "I want to send you free product" openers.', ai:['ChatGPT','Claude'] },
+    { title:'Product launch sequence', text:'Plan a 7-day product launch email sequence for [PRODUCT]. Day-by-day: tease, announce, social proof, objection handler, urgency, final push, post-launch follow-up. Include subject lines.', ai:['Claude','ChatGPT'] },
+    { title:'Twitter/X thread from blog post', text:'Turn this blog post into a punchy 10-tweet thread for X. Start with a hook tweet that stops the scroll. End with a CTA. Keep each tweet under 240 characters. No bullet dumps: [PASTE]', ai:['ChatGPT','Claude'] },
+    { title:'Competitor gap analysis', text:'Analyze the content gaps between my site [URL/DESCRIBE] and competitors [LIST]. Where are they ranking that I am not? What topics are underserved? Give me a prioritized attack list.', ai:['ChatGPT','Gemini'] },
+    { title:'Brand voice guide', text:'Create a brand voice guide for [COMPANY/PRODUCT]. Include: personality adjectives (what we are and are not), tone by channel, vocabulary do\'s and don\'ts, and 3 before/after rewrite examples.', ai:['Claude','ChatGPT'] },
+    { title:'Product description that sells', text:'Write a product description for [PRODUCT]. Features: [LIST]. Benefits: [LIST]. Audience: [DESCRIBE]. Tone: [enthusiastic/professional/playful]. Under 150 words. End with a purchase trigger.', ai:['ChatGPT','Claude'] },
+    { title:'Testimonial to case study', text:'Turn this customer testimonial into a mini case study: [PASTE]. Structure: customer background, problem they had, how they used [PRODUCT], specific results achieved, and a quote pull.', ai:['Claude','ChatGPT'] },
+    { title:'Newsletter intro that hooks', text:'Write 5 newsletter intro paragraphs for an issue about [TOPIC]. Make them feel like a message from a smart friend, not a marketing email. Under 60 words each. Warm, direct, no filler.', ai:['Claude','ChatGPT'] },
+    { title:'Retargeting ad script', text:'Write a 30-second retargeting ad script for [PRODUCT] targeting people who visited but did not buy. Address their likely objection: [DESCRIBE]. End with a limited-time offer CTA.', ai:['ChatGPT','Claude'] },
+    { title:'Google ad headlines + descriptions', text:'Write 15 Google Search ad headlines (max 30 chars each) and 4 descriptions (max 90 chars each) for [PRODUCT/SERVICE] targeting the keyword "[KEYWORD]". Focus on pain-point-to-solution framing.', ai:['ChatGPT','Claude'] },
+    { title:'Podcast guest pitch', text:'Write a compelling pitch email to appear on [PODCAST NAME]. My expertise: [DESCRIBE]. 3 topic ideas I could talk about. Under 200 words. Personalised to their audience, not a mass template.', ai:['ChatGPT','Claude'] },
+  ]},
+  { id:'students', label:'Students', emoji:'🎓', prompts:[
+    { title:'Explain like I\'m 12', text:'Explain [TOPIC] to me as if I am a curious 12-year-old. Use one simple analogy, give me 3 key takeaways, and end with one question I can test myself with.', ai:['ChatGPT','Claude','Gemini'] },
+    { title:'Turn notes into flashcards', text:'Here are my lecture notes: [PASTE NOTES]. Create 20 Q&A flashcards covering the most testable points. Format: Question | Answer. Group by subtopic.', ai:['ChatGPT','Claude'] },
+    { title:'Essay outline builder', text:'I am writing a [LENGTH] essay on [TOPIC] for [COURSE/LEVEL]. Give me a structured outline with: thesis statement, 3–4 main arguments with evidence ideas, counterargument, and conclusion strategy.', ai:['ChatGPT','Gemini'] },
+    { title:'Personalized study plan', text:'I have [X days] until my [SUBJECT] exam. Topics to cover: [LIST]. Weak areas: [LIST]. Build me a day-by-day study schedule with time blocks, revision sessions, and practice test days.', ai:['Claude','Gemini'] },
+    { title:'Decode a dense paragraph', text:'Rewrite this academic paragraph in plain English without losing meaning. Then list every technical term with a one-sentence definition: [PASTE]', ai:['ChatGPT','Claude'] },
+    { title:'Socratic homework helper', text:'I am stuck on this problem: [PASTE]. Do NOT give me the answer. Guide me with hints and Socratic questions until I figure it out myself. If I am wrong, tell me why without solving it for me.', ai:['Claude','ChatGPT'] },
+    { title:'Research paper summary', text:'Summarize this research paper in plain English: [PASTE ABSTRACT OR FULL TEXT]. Include: main question, methodology, key findings, limitations, and why it matters. Under 300 words.', ai:['Claude','ChatGPT','Gemini'] },
+    { title:'Compare two theories or concepts', text:'Compare [CONCEPT A] and [CONCEPT B] for [SUBJECT]. Use a table for quick reference, then a paragraph explaining when to use each and the key philosophical difference between them.', ai:['ChatGPT','Claude'] },
+    { title:'Grammar and clarity check', text:'Proofread this paragraph for grammar, clarity, and flow. Do not change my voice. Fix only what is wrong, and explain each change you made: [PASTE]', ai:['Claude','ChatGPT'] },
+    { title:'Make a mind map', text:'Create a text-based mind map for [TOPIC]. Central node → 5 main branches → 3 sub-points each. Format clearly so I can see the hierarchy at a glance.', ai:['ChatGPT','Gemini'] },
+    { title:'Practice interview questions', text:'I have an interview for [ROLE/SCHOOL PROGRAM]. Give me 10 likely questions they will ask, explain what they are testing, and give me a model answer structure for each.', ai:['Claude','ChatGPT'] },
+    { title:'Thesis statement generator', text:'I am writing about [TOPIC] and my angle is [YOUR POSITION]. Generate 5 strong thesis statements. Make them specific, arguable, and not just factual observations.', ai:['ChatGPT','Claude'] },
+    { title:'Citation in any format', text:'Format this source as a [APA/MLA/Chicago/Harvard] citation: [PASTE DETAILS: author, title, journal, year, pages, URL]. Then explain each part of the citation format.', ai:['ChatGPT','Claude'] },
+    { title:'Vocabulary builder', text:'I am preparing for [GRE/IELTS/CAT/exam]. Give me 20 high-frequency vocabulary words I likely do not know. For each: the word, definition, example sentence, and memory trick.', ai:['ChatGPT','Gemini'] },
+    { title:'Debate prep (both sides)', text:'I have a debate on [TOPIC]. Give me the 3 strongest arguments FOR and 3 strongest arguments AGAINST. Then give me a rebuttal for each opposing argument.', ai:['Claude','ChatGPT'] },
+    { title:'Textbook chapter summary', text:'Summarize [CHAPTER/TOPIC] from [TEXTBOOK/SUBJECT]. Highlight: main concepts, key definitions, important formulas or dates, and the 3 things most likely to appear in an exam.', ai:['ChatGPT','Claude'] },
+    { title:'Personal statement draft', text:'Help me draft a personal statement for [UNIVERSITY/PROGRAM]. My background: [DESCRIBE]. My goals: [DESCRIBE]. Tone: authentic, specific, ambitious without being arrogant. Under 650 words.', ai:['Claude','ChatGPT'] },
+    { title:'Math step-by-step solution', text:'Solve this math problem step by step, explaining every step in plain English so I understand the method, not just the answer: [PASTE PROBLEM]', ai:['ChatGPT','Gemini','Claude'] },
+    { title:'Writing feedback', text:'Give me honest feedback on this essay draft. Grade it as a [TEACHER/PROFESSOR] would for [CRITERIA]. Be specific about what is strong, what is weak, and exactly how to improve each weakness: [PASTE]', ai:['Claude','ChatGPT'] },
+    { title:'Concept to analogy', text:'I keep forgetting [CONCEPT]. Create 3 different analogies that explain it, each using a completely different domain (sport, cooking, everyday life). Make them memorable.', ai:['ChatGPT','Claude','Gemini'] },
+  ]},
+  { id:'writers', label:'Writers & Storytellers', emoji:'✍️', prompts:[
+    { title:'Unstick my opening line', text:'I am writing a story about [DESCRIBE PREMISE]. Give me 10 opening lines for this story. Mix tones: mysterious, punchy, melancholic, darkly funny. No "It was a dark and stormy night" energy.', ai:['Claude','ChatGPT'] },
+    { title:'Character backstory generator', text:'Create a deep backstory for this character: [NAME, AGE, ROLE IN STORY]. Include their greatest fear, a formative childhood memory, a secret they keep, and the wound that drives their behaviour.', ai:['Claude','ChatGPT'] },
+    { title:'Dialogue that sounds real', text:'Write a 300-word dialogue scene between [CHARACTER A] and [CHARACTER B] about [TOPIC/CONFLICT]. No dialogue tags other than "said." Show character through word choice and rhythm, not description.', ai:['Claude','ChatGPT'] },
+    { title:'Rewrite in a different style', text:'Rewrite this paragraph in the style of [AUTHOR: Hemingway/Nabokov/Chimamanda Ngozi Adichie/etc]. Capture their sentence length, vocabulary level, and thematic obsessions: [PASTE]', ai:['Claude','ChatGPT'] },
+    { title:'Plot hole checker', text:'Here is my story outline: [PASTE]. Act as a critical reader and identify every plot hole, logical inconsistency, or character motivation that does not track. Then suggest fixes for each.', ai:['Claude','ChatGPT'] },
+    { title:'Scene with sensory detail', text:'Rewrite this scene adding rich sensory detail — what the protagonist smells, hears, tastes, and feels physically, not just what they see. Make the reader inhabit the moment: [PASTE SCENE]', ai:['Claude','ChatGPT'] },
+    { title:'Show, don\'t tell', text:'This passage tells instead of showing: [PASTE]. Rewrite it so the emotion is conveyed through action, dialogue, and physical detail. Remove all instances of "felt," "was," and emotion words.', ai:['Claude','ChatGPT'] },
+    { title:'Three-act structure outline', text:'Help me outline a [SHORT STORY/NOVELLA/SCREENPLAY] about [PREMISE]. Use the three-act structure. Include: inciting incident, midpoint turn, dark night of the soul, and climax. Keep it tight.', ai:['Claude','ChatGPT'] },
+    { title:'Query letter for my novel', text:'Write a 250-word query letter for my novel: [GENRE], [WORD COUNT], [ONE-LINE PREMISE]. Protagonist: [DESCRIBE]. Central conflict: [DESCRIBE]. Hook, stakes, and a comps line included.', ai:['Claude','ChatGPT'] },
+    { title:'Villain motivation deep-dive', text:'My villain is [DESCRIBE]. Make them genuinely sympathetic and complex. Give them: a coherent worldview, the moment they made the choice to become who they are, and something they love unconditionally.', ai:['Claude','ChatGPT'] },
+    { title:'Metaphor generator', text:'I am describing [CONCEPT/EMOTION/SCENE] in my writing. Give me 10 original metaphors or similes for it. Avoid clichés. Range from subtle to wildly unexpected.', ai:['Claude','ChatGPT'] },
+    { title:'Flash fiction from a prompt', text:'Write a 200-word flash fiction story using this prompt: [PASTE]. It must have a clear beginning, middle, and end, and land on an emotionally resonant final line.', ai:['Claude','ChatGPT'] },
+    { title:'World-building questionnaire', text:'I am building a world for [GENRE: sci-fi/fantasy/literary]. Ask me 15 world-building questions I have not considered yet. Then, based on my answers, flag 3 areas that need more development.', ai:['Claude','ChatGPT'] },
+    { title:'Tighten my prose', text:'Cut this passage by 30% without losing meaning. Remove every redundant word, passive construction, and filler phrase. Return only the trimmed version: [PASTE]', ai:['Claude','ChatGPT'] },
+    { title:'Subtext in dialogue', text:'Rewrite this dialogue so that what the characters say is NOT what they actually mean. Add subtext, tension, and things left unsaid. Keep it under 200 words: [PASTE DIALOGUE]', ai:['Claude','ChatGPT'] },
+    { title:'Genre mash-up concept', text:'Combine [GENRE 1] and [GENRE 2] into a fresh story concept. Give me: one-line premise, protagonist, central conflict, unique setting detail, and the tonal challenge of blending these genres.', ai:['Claude','ChatGPT'] },
+    { title:'Chapter ending that hooks', text:'I need a chapter ending that makes it impossible to stop reading. Here is what happens in the chapter: [PASTE]. Write 5 different final paragraphs using different hook techniques: cliffhanger, revelation, question, tone shift, and image.', ai:['Claude','ChatGPT'] },
+    { title:'Poem from a feeling', text:'Write a poem about [FEELING/EXPERIENCE/MOMENT]. Form: [free verse/sonnet/haiku sequence/prose poem]. Avoid greeting-card clichés. Use concrete, unexpected imagery. Make it ache a little.', ai:['Claude','ChatGPT'] },
+    { title:'Unreliable narrator voice', text:'Rewrite this passage in the voice of an unreliable narrator who is [SELF-DELUDED/LYING/MENTALLY UNSTABLE]. The reader should suspect something is off, but the narrator should not break character: [PASTE]', ai:['Claude','ChatGPT'] },
+    { title:'Story from a news headline', text:'Turn this headline into a 500-word short story: [PASTE HEADLINE]. Do not be literal — use the headline as a jumping-off point, not a plot summary. Surprise me.', ai:['Claude','ChatGPT'] },
+  ]},
+  { id:'designers', label:'Designers & Creatives', emoji:'🎨', prompts:[
+    { title:'Design critique from a senior', text:'Act as a principal product designer. Critique this design for [PRODUCT]: [DESCRIBE]. Cover visual hierarchy, spacing, contrast, accessibility, and one thing you would fight to change in a design review.', ai:['Claude','ChatGPT'] },
+    { title:'Color system from scratch', text:'Build a complete color palette for a [MOOD: bold/minimal/playful/luxe] [PRODUCT TYPE] brand. Hex values for: primary, secondary, accent, neutrals (5 stops), and semantic states (success/warning/error/info).', ai:['ChatGPT','Gemini'] },
+    { title:'Typography pairing', text:'Recommend 3 font pairings for a [BRAND TYPE: fintech/edtech/lifestyle/fashion] brand. For each: display font, body font, mono font (if needed), why they work together, and where to get them free.', ai:['Claude','ChatGPT'] },
+    { title:'UX copy that converts', text:'Write 5 variants of copy for this UI element: [BUTTON/EMPTY STATE/ERROR MESSAGE/ONBOARDING TOOLTIP]: [CONTEXT]. Under 8 words each. Clear, friendly, on-brand. Flag which to A/B test first.', ai:['Claude','ChatGPT'] },
+    { title:'Moodboard direction from brief', text:'Here is my creative brief: [PASTE]. Build a moodboard direction: visual tone, typography personality, imagery style (photo/illustration/3D), colour temperature, and 3 reference aesthetic vibes with reasoning.', ai:['ChatGPT','Gemini'] },
+    { title:'WCAG accessibility audit', text:'Review this UI description for WCAG 2.1 AA accessibility issues: [PASTE]. List violations by severity (critical/serious/moderate), what guideline they violate, and the concrete fix for each.', ai:['Claude','ChatGPT'] },
+    { title:'Logo concept directions', text:'I need logo concepts for [BRAND NAME] — a [DESCRIBE WHAT THEY DO]. Give me 5 distinct conceptual directions: the core idea, visual metaphor, colour mood, and one thing that makes each direction distinctly different.', ai:['ChatGPT','Claude'] },
+    { title:'User persona from research data', text:'Create 2 detailed user personas from this research data: [PASTE]. Include: demographics, primary goal, top frustration, tech comfort, quote that captures their mindset, and how they would use [PRODUCT].', ai:['Claude','ChatGPT'] },
+    { title:'Redesign roast', text:'Roast my current design (I know it is bad): [DESCRIBE/PASTE]. Be brutally honest about what does not work and why. Then tell me the 3 highest-impact changes that would make it defensible.', ai:['Claude','ChatGPT'] },
+    { title:'Illustration style guide', text:'Define an illustration style guide for [BRAND]. Cover: character style (if any), line weight, colour palette, level of detail, dos and don\'ts, and 3 reference artists whose work is directionally correct.', ai:['ChatGPT','Claude'] },
+    { title:'Component naming convention', text:'Suggest a component naming convention for a design system for [TYPE OF PRODUCT]. Give examples for: atoms, molecules, organisms, templates. Make it scalable for a team of [SIZE].', ai:['Claude','ChatGPT'] },
+    { title:'Animation principles for this UI', text:'Recommend animation/motion principles for [PRODUCT TYPE]. Cover: easing curves, duration ranges by interaction type, which elements should animate and which should not, and one motion pattern to establish brand personality.', ai:['Claude','ChatGPT'] },
+    { title:'Design system audit', text:'I have a messy design system: [DESCRIBE]. Audit it for: inconsistent spacing, colour chaos, missing states, and unclear component hierarchy. Prioritize the top 5 fixes by impact.', ai:['Claude','ChatGPT'] },
+    { title:'Onboarding flow design', text:'Design an onboarding flow for [APP TYPE] for a new user who [DESCRIBE THEIR GOAL]. Map out: steps, what to ask vs. defer, where to show value quickly, and what the success moment looks like.', ai:['Claude','ChatGPT'] },
+    { title:'Pitch deck design direction', text:'Give me a design direction for a pitch deck for [STARTUP TYPE]. Recommended slide layout, typography mood, data visualization style, do we use photography or illustration, and the one visual motif that ties it together.', ai:['ChatGPT','Claude'] },
+    { title:'Dark mode adaptation guide', text:'How should I adapt my current [DESCRIBE COLOUR SYSTEM] for dark mode? Give me rules for background layers, surface elevation, text contrast, and which colours need dark-mode-specific alternatives.', ai:['Claude','ChatGPT'] },
+    { title:'Error state copy + design', text:'Design the error state for [SCENARIO: form validation / empty search / failed payment / 404]. Include: copy (heading + body), icon/illustration direction, primary CTA, and secondary action. Tone: [BRAND TONE].', ai:['Claude','ChatGPT'] },
+    { title:'Brief for a freelance illustrator', text:'Write a creative brief I can send to a freelance illustrator for [PROJECT]. Include: project overview, style direction, deliverables, technical specs, reference images description, and revision policy.', ai:['Claude','ChatGPT'] },
+    { title:'Design sprint day plan', text:'Plan a 5-day design sprint for solving [PROBLEM]. For each day: goal, key activities, facilitation techniques, outputs, and what a successful day looks like. Team size: [X people].', ai:['Claude','ChatGPT'] },
+    { title:'Figma auto-layout tips for my component', text:'I am building a [COMPONENT TYPE] in Figma. Walk me through the auto-layout approach: direction, spacing rules, min/max sizes, resizing behaviour, and how to handle [SPECIFIC EDGE CASE].', ai:['Claude','ChatGPT'] },
+  ]},
+  { id:'hr', label:'HR & Recruiters', emoji:'🧑‍💼', prompts:[
+    { title:'Job description that attracts talent', text:'Write an inclusive, compelling job description for a [ROLE] at a [COMPANY TYPE]. Sections: role overview, what you will own, must-haves, nice-to-haves, compensation range, and a culture blurb that screens out wrong fits.', ai:['ChatGPT','Claude'] },
+    { title:'Resume screener', text:'Compare this resume against this job description. Score fit 1–10 with 3 reasons. List the top 3 gaps. Suggest 3 interview questions to probe those gaps specifically: [PASTE BOTH]', ai:['Claude','Gemini'] },
+    { title:'Structured interview kit', text:'Create a structured interview guide for a [ROLE]. Include: 6 behavioral questions, what a strong vs. weak answer looks like for each, and a 1–5 scoring rubric. Make it legally defensible.', ai:['ChatGPT','Claude'] },
+    { title:'Rejection email that keeps the door open', text:'Write a warm, respectful rejection email to a candidate who interviewed for [ROLE] but was not selected. Reason: [BRIEF REASON]. Encourage future applications without making false promises.', ai:['ChatGPT','Claude'] },
+    { title:'30-60-90 day onboarding plan', text:'Build a 30-60-90 day onboarding plan for a new [ROLE]. Include: week-by-week goals, key relationships to build, milestones to hit, and how we define success at day 30, 60, and 90.', ai:['Claude','ChatGPT'] },
+    { title:'Performance improvement plan', text:'Draft a Performance Improvement Plan for an employee in [ROLE] struggling with [SPECIFIC ISSUES]. Include: clear expectations, measurable milestones, support offered, timeline, and consequence of non-improvement. Professional and legally defensible.', ai:['Claude','ChatGPT'] },
+    { title:'Culture add interview questions', text:'Write 8 interview questions that assess culture add (not fit) for a company that values [LIST 3 VALUES]. Avoid questions that screen for sameness. Explain what you are probing with each question.', ai:['Claude','ChatGPT'] },
+    { title:'Salary negotiation response', text:'A candidate has countered our offer of [AMOUNT] with [THEIR ASK]. We can flex to [MAX]. Write a response that: acknowledges their ask respectfully, makes our best offer, and preserves the relationship if they decline.', ai:['Claude','ChatGPT'] },
+    { title:'Employee survey questions', text:'Write 15 anonymous employee engagement survey questions for [COMPANY TYPE]. Cover: manager effectiveness, career growth, workload, belonging, and company direction. Mix Likert scale and open-ended. Flag the 5 most predictive of churn risk.', ai:['Claude','ChatGPT'] },
+    { title:'Hiring scorecard', text:'Build a hiring scorecard for [ROLE]. Define: 5 competencies to assess, what excellent/acceptable/poor looks like for each, weighting per competency, and a total score guide for go/no-go decisions.', ai:['Claude','ChatGPT'] },
+    { title:'Offer letter template', text:'Write a professional offer letter template for a [SENIORITY] [ROLE] in [COUNTRY]. Include: role, start date, compensation, benefits summary, reporting line, at-will clause, and acceptance deadline. Warm but professional tone.', ai:['ChatGPT','Claude'] },
+    { title:'Exit interview questions', text:'Write 12 exit interview questions to surface real reasons people are leaving. Avoid questions that let people give safe corporate answers. Probe for: manager issues, culture problems, and growth ceiling. Include one open "what would have made you stay" question.', ai:['Claude','ChatGPT'] },
+    { title:'Reference check call script', text:'Write a reference check call script for a candidate for [ROLE]. Questions should probe: their biggest strength in [KEY SKILL], a time they failed, how they handle [SPECIFIC CHALLENGE], and "would you rehire them and why."', ai:['Claude','ChatGPT'] },
+    { title:'Employer brand social post', text:'Write 3 employer brand social posts for [COMPANY] targeting [ROLE TYPE] candidates on [LinkedIn/Instagram/X]. Showcase culture authentically, not corporate-speak. Include hooks that stop the scroll.', ai:['ChatGPT','Claude'] },
+    { title:'Team reorg communication', text:'Write an internal communication for a team reorg affecting [X people]. Cover: what is changing, why, what stays the same, timeline, and how people can ask questions. Calm, direct, and human. No corporate euphemisms.', ai:['Claude','ChatGPT'] },
+  ]},
+  { id:'creators', label:'Content Creators', emoji:'🎬', prompts:[
+    { title:'30 content ideas by format', text:'Give me 30 content ideas for a [NICHE] creator on [PLATFORM]. Mix formats: how-to, hot take, storytime, myth-bust, list, collab, Q&A, and behind-the-scenes. Flag which 5 have highest viral potential.', ai:['ChatGPT','Gemini'] },
+    { title:'YouTube script from title', text:'Write a 5-minute YouTube video script for "[TITLE]". Include: hook (first 30 seconds to stop the skip), 3 main points, smooth transitions, and a CTA at the end. My style: [DESCRIBE].', ai:['Claude','ChatGPT'] },
+    { title:'Sponsor pitch deck', text:'Write a sponsor pitch for me to send to [BRAND TYPE]. My channel: [NICHE, AUDIENCE SIZE, AVG VIEWS]. Include: why my audience matches their customer, deliverables, rates, and a case for why this is a good ROI.', ai:['ChatGPT','Claude'] },
+    { title:'Comment reply that builds community', text:'I got this comment on my video: [PASTE]. Write 3 reply options: one short and warm, one that asks a follow-up question, and one that turns it into a new content idea publicly.', ai:['ChatGPT','Claude'] },
+    { title:'Thumbnail text A/B test', text:'I am making a YouTube thumbnail for a video about [TOPIC]. Give me 6 options for the text overlay (3 words max each). For each, explain the psychological hook and which audience segment it targets.', ai:['ChatGPT','Gemini'] },
+    { title:'Podcast episode outline', text:'Outline a 45-minute podcast episode on [TOPIC] for a [NICHE] audience. Include: hook intro, 4 segments with talking points, 2 suggested guest questions if I have a guest, and a memorable close.', ai:['Claude','ChatGPT'] },
+    { title:'Newsletter that people forward', text:'Write a 400-word newsletter issue on [TOPIC] for [NICHE] readers. Structure: punchy opening, one core insight, a counterintuitive take, one practical takeaway, and a question to reply to. Voice: smart friend, not media company.', ai:['Claude','ChatGPT'] },
+    { title:'TikTok/Reels script (60 sec)', text:'Write a 60-second TikTok/Reels script about [TOPIC]. First 3 seconds: hook that prevents the scroll. Then: value delivery. Last 5 seconds: CTA. No filler. Fast cuts implied. My style: [DESCRIBE].', ai:['ChatGPT','Claude'] },
+    { title:'Behind-the-scenes caption', text:'Write an Instagram caption for a behind-the-scenes photo of [DESCRIBE WHAT IS IN THE PHOTO]. Tone: authentic and relatable. Under 150 words. End with a question to drive comments.', ai:['ChatGPT','Claude'] },
+    { title:'Collab pitch to another creator', text:'Write a DM to pitch a collab with [CREATOR TYPE] who has [AUDIENCE]. I have [MY AUDIENCE]. Collab idea: [DESCRIBE]. Under 100 words. Lead with the value for their audience, not mine.', ai:['ChatGPT','Claude'] },
+    { title:'Channel positioning statement', text:'Help me define my channel positioning. I make content about [TOPICS] for [AUDIENCE]. Write: a one-liner channel description, what makes me different from [COMPETITORS], and the one thing I want viewers to feel after watching.', ai:['Claude','ChatGPT'] },
+    { title:'Video idea from trending topic', text:'[TRENDING TOPIC] is blowing up right now. Give me 5 ways I, as a [NICHE] creator, could make a video on this topic that is relevant to my audience but still rides the trend.', ai:['ChatGPT','Gemini'] },
+    { title:'End screen CTA options', text:'Write 5 end screen CTA scripts for a YouTube video about [TOPIC]. Each under 20 seconds when spoken. Mix: subscribe push, next video tease, community join, and playlist send. Natural, not salesy.', ai:['ChatGPT','Claude'] },
+    { title:'Repurpose long video into short clips', text:'Here is my video transcript: [PASTE]. Identify 5 standalone moments I can cut into short-form clips (under 60 seconds). For each: time range, why it works as a standalone, and the hook line to use as caption.', ai:['Claude','ChatGPT'] },
+    { title:'Instagram bio rewrite', text:'Rewrite my Instagram bio. Current bio: [PASTE]. My niche: [DESCRIBE]. Target follower: [DESCRIBE]. Give me 3 options ranging from professional to personality-forward. Include a CTA in each.', ai:['ChatGPT','Claude'] },
+  ]},
+  { id:'teachers', label:'Teachers & Educators', emoji:'📚', prompts:[
+    { title:'Lesson plan in minutes', text:'Create a 45-minute lesson plan on [TOPIC] for [GRADE LEVEL]. Include: learning objectives, hook activity, main instruction, 2 differentiated activities, exit ticket, and materials needed.', ai:['ChatGPT','Claude'] },
+    { title:'Differentiate for every learner', text:'Take this activity: [PASTE]. Give me 3 versions — scaffolded (support), on-level, and extension — with the specific changes you made to each. Appropriate for [GRADE/SUBJECT].', ai:['Claude','Gemini'] },
+    { title:'Quiz with answer key', text:'Write a 15-question quiz on [TOPIC] for [GRADE]. Mix: 5 multiple choice, 5 true/false, and 5 short answer. Include a complete answer key with brief explanations for each answer.', ai:['ChatGPT','Gemini'] },
+    { title:'Parent communication', text:'Draft a professional but warm email to parents about [SITUATION: student progress/upcoming event/behavior concern]. Clear, supportive, and action-oriented. Avoid jargon. Under 200 words.', ai:['ChatGPT','Claude'] },
+    { title:'Turn a concept into a classroom game', text:'Turn this learning objective into an engaging game for [GRADE]: [OBJECTIVE]. Explain: setup, rules, materials, how it reinforces the concept, and how I informally assess understanding during play.', ai:['Claude','Gemini'] },
+    { title:'Rubric builder', text:'Create a detailed assessment rubric for [ASSIGNMENT TYPE] for [GRADE]. Criteria: [LIST 4–5]. Four performance levels: exemplary, proficient, developing, beginning. Include point values.', ai:['Claude','ChatGPT'] },
+    { title:'Discussion questions that go deep', text:'Write 10 discussion questions for [TEXT/TOPIC] for [GRADE]. Avoid yes/no questions. Mix: comprehension, inference, evaluation, and personal connection. Flag the 3 most likely to spark debate.', ai:['Claude','ChatGPT'] },
+    { title:'Accommodation plan suggestions', text:'I have a student with [CHALLENGE: dyslexia/ADHD/anxiety/ELL status]. Suggest 8 practical classroom accommodations for [SUBJECT]. Include both in-class strategies and assignment modifications.', ai:['Claude','ChatGPT'] },
+    { title:'Project-based learning unit', text:'Design a 2-week project-based learning unit on [TOPIC] for [GRADE]. Include: driving question, final product, milestones, skills practiced, cross-curricular connections, and assessment approach.', ai:['Claude','ChatGPT'] },
+    { title:'Real-world connection', text:'My students keep asking "when will we use this?" about [CONCEPT/SKILL]. Give me 5 concrete, age-appropriate real-world examples of where [TOPIC] actually matters. Make them compelling for [AGE GROUP].', ai:['ChatGPT','Claude','Gemini'] },
+    { title:'Sentence starters for ELL students', text:'Create a sentence starter bank for [GRADE] ELL students doing [ACTIVITY TYPE: discussion/writing/argumentation]. 20 starters organized by function: agreeing, disagreeing, clarifying, elaborating, and summarizing.', ai:['Claude','ChatGPT'] },
+    { title:'Professional development plan', text:'Create a personal professional development plan for a [GRADE/SUBJECT] teacher who wants to improve in [AREA: classroom management/inquiry-based learning/assessment/tech integration]. Include: goals, resources, timeline, and how to measure growth.', ai:['Claude','ChatGPT'] },
+    { title:'Warm-up activity for any lesson', text:'Give me 5 creative warm-up activities for a [SUBJECT] class at [GRADE LEVEL] that take 5 minutes or less, activate prior knowledge about [TOPIC], and get students talking immediately.', ai:['ChatGPT','Gemini'] },
+    { title:'Feedback that motivates', text:'I need to give feedback on this student work: [PASTE]. Write feedback that: acknowledges what is strong specifically, identifies one key area to improve, and frames the improvement as a growth opportunity. Grade level: [X].', ai:['Claude','ChatGPT'] },
+    { title:'Substitute teacher plan', text:'Write a full substitute teacher plan for [GRADE/SUBJECT] covering [X HOURS]. Include: class overview, seating/routine notes, 2 self-contained activities with instructions simple enough for a non-specialist, and emergency procedures.', ai:['ChatGPT','Claude'] },
+  ]},
+  { id:'productivity', label:'Productivity & Life', emoji:'⚡', trending:true, prompts:[
+    { title:'Weekly schedule optimizer', text:'Help me build a highly optimized weekly schedule. I need to fit in: [LIST COMMITMENTS]. My peak energy is [MORNING/AFTERNOON/EVENING]. I have [X hours] of deep work per day. Use time-blocking and backwards planning.', ai:['ChatGPT','Claude','Gemini'] },
+    { title:'Decision framework', text:'I am stuck on this decision: [DESCRIBE DECISION]. Run me through a structured framework: list all options, pros/cons, hidden costs, reversibility, and what my 80-year-old self would advise. Then give me your recommendation.', ai:['Claude','ChatGPT'] },
+    { title:'Email triage system', text:'I have [X] unread emails. Help me build a triage system. Categories to create, how to process each, inbox zero rules, and a template for the 5 most common emails I send.', ai:['Claude','ChatGPT'] },
+    { title:'Morning routine designer', text:'Design my ideal morning routine. I have [X minutes]. Goals: [DESCRIBE]. I struggle with: [DESCRIBE]. Give me a step-by-step routine with timing, and explain the science behind each element.', ai:['ChatGPT','Claude'] },
+    { title:'Meeting agenda that wastes no time', text:'Create a tight agenda for a [X-minute] meeting about [TOPIC] with [WHO IS ATTENDING]. Include: pre-read to send beforehand, timed sections, decision points, and who owns each item.', ai:['Claude','ChatGPT'] },
+    { title:'Say no without burning bridges', text:'I need to decline [REQUEST: work project / social event / favor] from [RELATIONSHIP: boss / friend / family]. Write 3 responses ranging from firm to soft. No lying, no over-explaining, preserving the relationship.', ai:['Claude','ChatGPT'] },
+    { title:'Goal-setting using backwards planning', text:'I want to achieve [GOAL] by [DATE]. Work backwards from that date and map out: quarterly milestones, monthly targets, weekly habits, and the one daily action that compounds most. Flag dependencies and risks.', ai:['Claude','ChatGPT'] },
+    { title:'Negotiate a raise', text:'I want to ask for a [X%] raise. Current salary: [AMOUNT]. My accomplishments this year: [LIST]. Market rate for my role: [AMOUNT]. Write me a negotiation script, including how to respond if they say no or not now.', ai:['Claude','ChatGPT'] },
+    { title:'Second brain setup', text:'Help me design a personal knowledge management system using [Notion/Obsidian/Logseq]. I work in [FIELD] and need to capture: [TYPES OF INFO]. Give me: folder structure, tagging system, daily capture workflow, and weekly review template.', ai:['Claude','ChatGPT'] },
+    { title:'Difficult conversation script', text:'I need to have a hard conversation with [PERSON] about [TOPIC]. I want to: [OUTCOME]. Help me script the opening, the core message, how to handle [LIKELY PUSHBACK], and how to end constructively.', ai:['Claude','ChatGPT'] },
+    { title:'Budget in 5 minutes', text:'I earn [AMOUNT] per month. My fixed costs: [LIST]. My goals: [SAVE FOR X / PAY OFF Y]. Build me a zero-based budget, flag where I am likely overspending, and suggest one immediate change.', ai:['Claude','ChatGPT','Gemini'] },
+    { title:'Learning plan for a new skill', text:'I want to learn [SKILL] in [TIMEFRAME]. I am starting at [BEGINNER/INTERMEDIATE] level. Build me a structured learning plan: best free resources, practice schedule, milestones, and how I will know I have made it.', ai:['Claude','ChatGPT'] },
+    { title:'Delegation guide', text:'I manage [TEAM SIZE] and I cannot stop doing everything myself. Help me: identify what only I can do, what I should delegate immediately, how to hand off [SPECIFIC TASK], and a template for delegating clearly.', ai:['Claude','ChatGPT'] },
+    { title:'Book summary to action items', text:'Summarize [BOOK TITLE] in its 5 most important ideas. For each idea, give me one concrete action I can take this week to apply it. Skip the overview — I just want what to do differently.', ai:['Claude','ChatGPT','Gemini'] },
+    { title:'Procrastination breaker', text:'I have been avoiding [TASK] for [X days/weeks]. Diagnose why I am avoiding it (fear / perfectionism / unclear next step / too big). Then give me: the smallest possible next step, a 2-minute start ritual, and a reward.', ai:['Claude','ChatGPT'] },
+    { title:'Professional bio (3 versions)', text:'Write my professional bio in 3 lengths: 50-word (for social media), 150-word (for speaker pages), and 300-word (for full about pages). My background: [PASTE]. Tone: [AUTHORITATIVE/WARM/BOLD].', ai:['Claude','ChatGPT'] },
+    { title:'Networking message that does not feel gross', text:'I want to reach out to [PERSON] who I [MET BRIEFLY / ADMIRE / HAVE A MUTUAL CONNECTION WITH]. I want to [ASK FOR ADVICE / BUILD A RELATIONSHIP / EXPLORE COLLABORATION]. Write 3 message options. No "pick your brain" language.', ai:['ChatGPT','Claude'] },
+    { title:'Annual review self-assessment', text:'Help me write my annual performance self-assessment. My role: [DESCRIBE]. Top achievements: [LIST]. Areas I grew in: [LIST]. Areas to improve: [LIST]. Tone: confident and honest. Format it for a formal HR submission.', ai:['Claude','ChatGPT'] },
+    { title:'Travel packing list', text:'I am going to [DESTINATION] for [X days] in [SEASON], for [PURPOSE: business/adventure/beach]. Build me a complete packing list. Flag what I am most likely to forget and what I do not need to bring.', ai:['ChatGPT','Gemini','Claude'] },
+    { title:'Evening wind-down routine', text:'Design a 30-minute evening routine to help me [IMPROVE SLEEP / DECOMPRESS FROM WORK / REDUCE ANXIETY]. I currently struggle with: [DESCRIBE]. Include: order of activities, what to avoid, and one reflection habit.', ai:['ChatGPT','Claude'] },
+  ]},
+  { id:'finance', label:'Finance & Investing', emoji:'💰', prompts:[
+    { title:'Explain this financial concept', text:'Explain [CONCEPT: compound interest / ETFs / options / P/E ratio] to me as if I am smart but have no finance background. Use a concrete number example and explain why it matters for my money.', ai:['Claude','ChatGPT','Gemini'] },
+    { title:'Investment portfolio audit', text:'Here is my current portfolio: [LIST HOLDINGS AND ALLOCATIONS]. My goals: [DESCRIBE]. Time horizon: [X years]. Risk tolerance: [LOW/MED/HIGH]. Audit it for: concentration risk, fee drag, and alignment with my goals.', ai:['Claude','ChatGPT'] },
+    { title:'Side hustle financial model', text:'Build a simple financial model for a [SIDE HUSTLE TYPE]. Inputs: [STARTUP COST], [PRICE PER UNIT/HOUR], [HOURS PER WEEK]. Calculate: monthly revenue, break-even point, annual profit at 3 growth scenarios.', ai:['Claude','ChatGPT'] },
+    { title:'Debt payoff strategy', text:'I have these debts: [LIST WITH BALANCES AND INTEREST RATES]. Monthly available to put toward debt: [AMOUNT]. Compare avalanche vs snowball strategy for my specific situation and tell me which saves me more.', ai:['Claude','ChatGPT'] },
+    { title:'Explain a company\'s earnings', text:'Summarize and explain [COMPANY]\'s most recent earnings report in plain English. What were the key metrics, how did they perform vs. expectations, what is management saying about guidance, and what does it mean for the stock?', ai:['Claude','ChatGPT','Gemini'] },
+    { title:'Tax deduction checklist', text:'I am a [FREELANCER/SMALL BUSINESS OWNER/SALARIED EMPLOYEE] in [COUNTRY]. Give me a comprehensive list of tax deductions I am likely missing. For each, what documentation do I need to claim it?', ai:['Claude','ChatGPT'] },
+    { title:'Emergency fund calculator', text:'I want to build a proper emergency fund. Monthly essential expenses: [AMOUNT]. Job security level: [LOW/MEDIUM/HIGH]. Dependents: [X]. Calculate how much I need and a realistic timeline to build it on [MONTHLY SAVINGS].', ai:['Claude','ChatGPT'] },
+    { title:'Compare two investment options', text:'Compare investing in [OPTION A: index funds / real estate / crypto / gold] vs [OPTION B] for someone with [AMOUNT] to invest, a [X year] horizon, and [LOW/MED/HIGH] risk tolerance. No hype, just honest trade-offs.', ai:['Claude','ChatGPT'] },
+    { title:'Salary vs equity decision', text:'I have two offers. Offer A: [SALARY + BENEFITS]. Offer B: [LOWER SALARY + EQUITY DETAILS]. Company B is at [STAGE]. Help me model the financial scenarios and the non-financial trade-offs to make a rational decision.', ai:['Claude','ChatGPT'] },
+    { title:'Personal P&L statement', text:'Help me create a monthly personal profit and loss statement. Income: [LIST SOURCES]. Fixed expenses: [LIST]. Variable expenses: [LIST]. Give me: net monthly cash flow, savings rate, and the one number to focus on improving.', ai:['Claude','ChatGPT'] },
+    { title:'First home buying checklist', text:'I am buying my first home in [CITY/COUNTRY] with a budget of [AMOUNT]. Walk me through: what to get in order before I start searching, hidden costs I am not thinking about, questions to ask a mortgage broker, and red flags to watch for.', ai:['Claude','ChatGPT'] },
+    { title:'Freelance rate calculator', text:'I am a freelance [ROLE] in [CITY]. My desired annual income: [AMOUNT]. Billable hours per week: [X]. Vacation weeks: [X]. Business expenses: [AMOUNT/YEAR]. Calculate my minimum hourly rate and how to position it.', ai:['Claude','ChatGPT'] },
+    { title:'Inflation impact on savings', text:'I have [AMOUNT] in [ACCOUNT TYPE yielding X%]. Inflation is running at [X%]. Show me: the real return, what my money will be worth in 5/10/20 years, and what yield I need to actually beat inflation.', ai:['Claude','ChatGPT','Gemini'] },
+    { title:'Mutual fund vs ETF comparison', text:'Explain the practical difference between mutual funds and ETFs for a long-term investor in [COUNTRY]. Cover: costs, tax efficiency, flexibility, minimum investments, and which is better for my situation: [DESCRIBE].', ai:['Claude','ChatGPT'] },
+    { title:'Retirement number calculator', text:'I want to retire at [AGE] with [LIFESTYLE]. Current savings: [AMOUNT]. Monthly contribution: [AMOUNT]. Expected return: [X%]. Calculate: my retirement number, whether I am on track, and what levers have the biggest impact.', ai:['Claude','ChatGPT'] },
+  ]},
+  { id:'health', label:'Health & Fitness', emoji:'💪', prompts:[
+    { title:'Custom workout plan', text:'Create a [X-day/week] workout plan for someone who wants to [GOAL: lose fat/build muscle/improve endurance]. Equipment available: [GYM/HOME/NONE]. Current level: [BEGINNER/INTERMEDIATE]. Include sets, reps, rest, and weekly progression.', ai:['ChatGPT','Gemini','Claude'] },
+    { title:'Meal plan that actually works', text:'Build a [X-calorie] weekly meal plan for [GOAL: fat loss/muscle gain/maintenance]. Dietary restrictions: [LIST]. I cook [X times per week] and have [X minutes] per meal. Give me: 5 breakfasts, 5 lunches, 5 dinners, and 3 snack options.', ai:['ChatGPT','Gemini'] },
+    { title:'Explain my lab results', text:'Explain these blood test results in plain English: [PASTE RESULTS]. For each value that is out of range, tell me: what the marker measures, what high/low means, and what questions to ask my doctor.', ai:['Claude','ChatGPT'] },
+    { title:'Mobility routine for desk workers', text:'Design a 10-minute mobility routine for someone who sits at a desk [X hours/day]. Target areas: [hips/spine/shoulders/neck]. I have [TIGHT/PAINFUL/STIFF] [AREA]. Include exercises in order with duration.', ai:['ChatGPT','Claude'] },
+    { title:'Sleep optimization plan', text:'Help me fix my sleep. Current situation: [DESCRIBE: hours, quality, issues]. I need to be awake at [TIME]. Build me a: sleep schedule, pre-sleep routine, environment checklist, and one habit to start this week.', ai:['Claude','ChatGPT'] },
+    { title:'Supplement stack guide', text:'I am [MALE/FEMALE], [AGE], trying to [GOAL]. Should I take [SUPPLEMENT]? Give me evidence-based answers only. For each supplement: what the research actually shows, effective dose, timing, and safety considerations.', ai:['Claude','ChatGPT'] },
+    { title:'Running plan for beginners', text:'I want to run [5K/10K/half marathon] in [X weeks]. Currently I can run [DISTANCE/TIME]. Build me a week-by-week progressive training plan with: easy runs, long runs, rest days, and a taper before race day.', ai:['ChatGPT','Claude'] },
+    { title:'Macro calculator', text:'Calculate my macros for [GOAL: fat loss/muscle gain/maintenance]. Stats: [HEIGHT, WEIGHT, AGE, GENDER, ACTIVITY LEVEL]. Give me: daily calories, protein, carbs, and fat in grams. Explain the reasoning behind the split.', ai:['ChatGPT','Gemini'] },
+    { title:'Home workout — no equipment', text:'Give me a 30-minute, full-body home workout with zero equipment. Difficulty: [BEGINNER/INTERMEDIATE/ADVANCED]. Include: warm-up, main workout with sets/reps/rest, cool-down, and modifications for any exercise I cannot do.', ai:['ChatGPT','Claude'] },
+    { title:'Mental health habit stack', text:'I am dealing with [ANXIETY/LOW MOOD/BURNOUT/STRESS]. Do not diagnose me. Give me 5 evidence-based daily habits that help with [ISSUE], explained simply, with how to start small and what to expect in the first 2 weeks.', ai:['Claude','ChatGPT'] },
+    { title:'Habit tracker design', text:'Help me design a simple habit tracker for these [X] habits: [LIST]. For each habit: the minimum viable version, a cue to trigger it, how to make it easy to start, and how to track it without friction.', ai:['Claude','ChatGPT'] },
+    { title:'Intermittent fasting guide', text:'Explain intermittent fasting for my situation: [GOAL, CURRENT EATING PATTERN, SCHEDULE]. Which protocol fits me best (16:8, 5:2, etc.)? What to eat during my window, common mistakes, and realistic expectations.', ai:['ChatGPT','Claude'] },
+    { title:'Injury prevention for [sport]', text:'I play [SPORT] and keep getting [INJURY/PAIN] in [BODY PART]. What are the common causes, prehab exercises to prevent it, what to avoid, and when I should see a physio vs. managing it myself?', ai:['Claude','ChatGPT'] },
+    { title:'Nutrition label decoder', text:'Decode this nutrition label for me: [PASTE OR DESCRIBE]. Is this food actually healthy for [MY GOAL]? Flag: hidden sugars, bad ingredients, misleading health claims, and what the serving size actually means.', ai:['Claude','ChatGPT'] },
+    { title:'Recovery protocol', text:'I just finished [MARATHON/HEAVY LIFT/COMPETITION/INJURY]. Design my recovery protocol for the next [X days]. Cover: sleep, nutrition, active recovery, what to avoid, and when it is safe to train hard again.', ai:['ChatGPT','Claude'] },
+  ]},
+  { id:'legal-finance-pro', label:'Legal & Professional', emoji:'⚖️', prompts:[
+    { title:'Contract plain-English summary', text:'Summarize this contract in plain English: [PASTE]. Flag: anything unusual, clauses that could hurt me, important deadlines, and the 3 most important things I need to understand before signing. (I know this is not legal advice.)', ai:['Claude','ChatGPT'] },
+    { title:'NDA key terms explained', text:'Explain the key terms in this NDA: [PASTE]. What am I agreeing to? What are the teeth if I breach it? What is unusual about this NDA compared to a standard one? (Not legal advice.)', ai:['Claude','ChatGPT'] },
+    { title:'Professional email — any situation', text:'Write a professional email for this situation: [DESCRIBE]. Recipient: [DESCRIBE]. My goal: [DESCRIBE]. Tone: [FORMAL/DIRECT/DIPLOMATIC]. Under 200 words. No corporate filler phrases.', ai:['Claude','ChatGPT'] },
+    { title:'Meeting notes to action items', text:'Turn these meeting notes into structured output: [PASTE]. Extract: decisions made, action items with owners and deadlines, open questions, and a 3-sentence summary to send to all attendees.', ai:['Claude','ChatGPT'] },
+    { title:'Business proposal structure', text:'Outline a business proposal for [PRODUCT/SERVICE] to [CLIENT TYPE]. Include: executive summary, problem statement, proposed solution, scope of work, timeline, pricing, and why us.', ai:['Claude','ChatGPT'] },
+    { title:'LinkedIn profile rewrite', text:'Rewrite my LinkedIn profile. Current: [PASTE]. Role I am targeting: [DESCRIBE]. Sections to rewrite: headline, about summary, and top 3 experience bullets. Make it recruiter-friendly and not generic.', ai:['Claude','ChatGPT'] },
+    { title:'Employment contract red flags', text:'Review this employment contract for red flags: [PASTE]. Look for: excessive non-compete scope, IP assignment that is too broad, at-will clauses with no severance, restrictive moonlighting policies, and unusual termination terms. (Not legal advice.)', ai:['Claude','ChatGPT'] },
+    { title:'Cover letter that does not suck', text:'Write a cover letter for this job: [JOB DESCRIPTION]. My relevant experience: [PASTE]. Do not restate my CV. Tell a story that explains why I specifically want this role at this company, with one concrete example of what I bring.', ai:['Claude','ChatGPT'] },
+    { title:'Response to a bad review', text:'Write a professional public response to this negative review: [PASTE]. Tone: calm, accountable, and solution-focused. Acknowledge the issue without being defensive. Do not throw staff under the bus.', ai:['Claude','ChatGPT'] },
+    { title:'SLA template', text:'Write a Service Level Agreement template for [SERVICE TYPE] between [PROVIDER TYPE] and [CLIENT TYPE]. Include: service description, uptime guarantee, response time commitments, exclusions, and breach remedies.', ai:['Claude','ChatGPT'] },
+    { title:'Client proposal follow-up sequence', text:'Write a 3-email follow-up sequence after sending a proposal that has not been responded to. Timeline: 3 days, 7 days, 14 days after proposal. Each under 100 words. Not pushy, but creates urgency naturally.', ai:['ChatGPT','Claude'] },
+    { title:'Terms of service — plain language', text:'Summarize this Terms of Service document in plain language: [PASTE/URL]. What am I agreeing to that I would not expect? What data do they collect? Can they change terms unilaterally? What are my rights to exit?', ai:['Claude','ChatGPT'] },
+    { title:'Partnership agreement outline', text:'Outline the key terms for a partnership agreement between [PARTY A] and [PARTY B] for [VENTURE]. Cover: equity split, roles and decision rights, IP ownership, exit mechanisms, and what happens if one partner wants out.', ai:['Claude','ChatGPT'] },
+    { title:'Presentation script from slides', text:'I have [X] slides with these points: [PASTE BULLET POINTS]. Write a natural speaking script for each slide. Time target: [X minutes total]. Do not make it sound scripted — write it as spoken language, not written language.', ai:['Claude','ChatGPT'] },
+    { title:'GDPR compliance checklist', text:'Give me a practical GDPR compliance checklist for a [TYPE OF BUSINESS] that collects [TYPES OF DATA] from [EU/UK] users. Priority order what to fix first and flag the highest-risk areas.', ai:['Claude','ChatGPT'] },
+  ]},
+  { id:'kids', label:'Kids', emoji:'🧒', prompts:[
+    { title:'Tell me a bedtime story', text:'Tell me a fun bedtime story about a [ANIMAL] who goes on an adventure to [PLACE]. Make it kind, a little silly, funny in places, and end with everyone happy and ready to sleep.', ai:['ChatGPT','Gemini','Claude'] },
+    { title:'Why does [thing] happen?', text:'Explain why [EVERYDAY SCIENCE THING: the sky is blue / rainbows appear / ice melts / stars twinkle] in a way a curious 7-year-old would understand. Use a fun example and keep it short.', ai:['ChatGPT','Claude','Gemini'] },
+    { title:'Homework helper (not cheater)', text:'I am stuck on this homework problem: [PASTE]. Please do NOT give me the answer. Give me hints and ask me questions that help me figure it out myself. If I get something wrong, tell me why without just solving it.', ai:['Claude','ChatGPT'] },
+    { title:'Silly riddles', text:'Make up 5 silly, kid-friendly riddles about [TOPIC]. Give me the riddles first, with a blank line after each. Then put the answers at the very end so I can try them first.', ai:['Gemini','ChatGPT'] },
+    { title:'Invent a magical creature', text:'Help me invent a brand-new make-believe creature! Describe: what it looks like, where it lives, what it eats, its one magical power, its weakness, and give it a cool name.', ai:['ChatGPT','Claude'] },
+    { title:'Fun facts about [topic]', text:'Give me 10 amazing and surprising fun facts about [TOPIC] that I probably do not know yet. Make them feel like "wait, REALLY?!" moments. I am [AGE] years old.', ai:['ChatGPT','Gemini'] },
+    { title:'Help me write a story', text:'I want to write a story about [MY IDEA]. Help me figure out: the main character and what they want, the problem they need to solve, and how the story should end. Ask me questions to help me build it.', ai:['Claude','ChatGPT'] },
+    { title:'Draw with words', text:'Describe a [DRAGON / SPACESHIP / MAGICAL FOREST / UNDERWATER CITY] in so much detail that I could draw it perfectly from your description. Use colours, sizes, textures, and surprising details.', ai:['ChatGPT','Claude'] },
+    { title:'Science experiment at home', text:'Give me a fun science experiment I can do at home using things from the kitchen. I am [AGE]. Explain what will happen, why it happens in simple words, and what I should tell my parents before I start.', ai:['ChatGPT','Gemini'] },
+    { title:'My favourite animal facts', text:'Tell me everything cool about [FAVOURITE ANIMAL]. How big are they, what do they eat, where do they live, their most amazing ability, one thing even scientists find surprising, and whether they are endangered.', ai:['ChatGPT','Gemini','Claude'] },
+    { title:'Tongue twisters', text:'Give me 5 tongue twisters, from easy to super hard. Then tell me the fastest I could possibly say the hardest one and still be understood. Challenge accepted!', ai:['ChatGPT','Gemini'] },
+    { title:'Would you rather (extreme edition)', text:'Give me 10 "would you rather" questions that are funny and really hard to choose between. Make some gross, some silly, and some genuinely tricky. Appropriate for someone my age: [AGE].', ai:['ChatGPT','Gemini'] },
+    { title:'Help me understand a big word', text:'What does [WORD] mean? Give me: the simple definition, how to pronounce it, an example sentence I could actually say, and a memory trick to remember it. I am [AGE].', ai:['Claude','ChatGPT'] },
+    { title:'Make learning maths fun', text:'Make [MATHS CONCEPT: fractions / multiplication / long division] feel exciting and easy to understand. Use a story, game, or real-life example I would actually care about. I am in [GRADE LEVEL].', ai:['ChatGPT','Claude','Gemini'] },
+    { title:'What career should I have?', text:'I like [LIST 3 THINGS I ENJOY / AM GOOD AT]. What are 5 cool careers that might suit me when I grow up? For each: what you do all day, something surprising about it, and how to start learning about it now.', ai:['ChatGPT','Gemini'] },
+  ]},
+];
 
-  <script>
-  // ─────────────── DATA ───────────────
-  const ROLES = [
-    { id:'aimedia', label:'AI Image & Video', emoji:'🪄', trending:true, prompts:[
-      { title:'Courtside at an IPL match', text:'A hyper-realistic photo of [ME / UPLOAD] sitting in the front row of a packed IPL cricket stadium at night, floodlights glowing, crowd blurred in the background, wearing a team jersey, cinematic depth of field, shot on 85mm.', ai:['Nano Banana','Midjourney'] },
-      { title:'Hero shot walking onto the pitch', text:'Cinematic low-angle photo of [ME] walking out onto a cricket stadium pitch, bat over shoulder, stadium lights flaring, dramatic golden-hour haze, crowd roaring, ultra-realistic, 35mm film look.', ai:['Midjourney','Nano Banana'] },
-      { title:'3D collectible figurine of me', text:'Turn [UPLOAD] into a 1/7 scale 3D collectible figurine standing on a round base, displayed in a clear blister-pack box on a desk, soft studio lighting, hyper-detailed, product photography style.', ai:['Nano Banana','Midjourney'] },
-      { title:'Retro 90s Bollywood portrait', text:'Transform [UPLOAD] into a nostalgic 1990s Bollywood film poster portrait — warm grain, soft glow, vintage saree/sherwani styling, dramatic studio backdrop, hand-painted poster aesthetic.', ai:['Midjourney','Ideogram'] },
-      { title:'Polaroid with my idol', text:'A candid Polaroid-style photo of [ME] standing next to [CELEBRITY], slight motion blur, direct flash, both smiling, casual setting, ultra-realistic, looks like a real fan photo from a phone.', ai:['Nano Banana','Midjourney'] },
-      { title:'Cinematic drone flythrough (video)', text:'A smooth aerial drone shot flying over [CITY/LANDMARK] at sunrise, golden light, gentle camera push-in, volumetric clouds, cinematic color grade, 5-second seamless loop.', ai:['Veo','Sora','Kling'] },
-      { title:'Talking avatar product ad (video)', text:'A 6-second cinematic ad: [PRODUCT] on a rotating pedestal with soft studio lighting, dynamic camera orbit, dramatic reflections, then a clean logo reveal. Smooth, premium, modern.', ai:['Sora','Veo','Runway'] },
-      { title:'Action-figure-in-a-box of me', text:'Make [UPLOAD] into a boxed action figure toy with accessories beside it (laptop, coffee, headphones), packaging label reads "[MY NAME]", retail toy-aisle lighting, hyper-detailed.', ai:['Nano Banana','Ideogram'] },
-    ]},
-    { id:'students', label:'Students', emoji:'🎓', prompts:[
-      { title:'Explain any topic like I\'m 12', text:'Explain [TOPIC] to me as if I\'m a curious 12-year-old. Use a simple analogy, then give me 3 key takeaways and one question to test myself.', ai:['ChatGPT','Claude','Gemini'] },
-      { title:'Turn my notes into flashcards', text:'Here are my lecture notes: [PASTE NOTES]. Create 15 Q&A flashcards covering the most testable points. Format as Question | Answer.', ai:['ChatGPT','Claude'] },
-      { title:'Essay outline builder', text:'I\'m writing an essay on [TOPIC] for [LEVEL]. Give me a structured outline with a thesis, 3 arguments with evidence ideas, and a counter-argument.', ai:['ChatGPT','Gemini'] },
-      { title:'Study plan in 60 seconds', text:'I have [X days] until my [SUBJECT] exam and these topics: [LIST]. Build me a day-by-day study schedule prioritizing weak areas.', ai:['Claude','Gemini'] },
-      { title:'Decode a hard paragraph', text:'Rewrite this dense academic paragraph in plain English without losing meaning, then list any technical terms with definitions: [PASTE]', ai:['ChatGPT','Claude'] },
-    ]},
-    { id:'developers', label:'Developers', emoji:'💻', prompts:[
-      { title:'Explain this code, then refactor it', text:'Explain what this code does step by step, flag any bugs or edge cases, then refactor it for readability and performance: [PASTE CODE]', ai:['ChatGPT','Claude'] },
-      { title:'SQL query from plain English', text:'I have tables [SCHEMA]. Write an optimized SQL query that [GOAL]. Explain the joins and suggest indexes that would speed it up.', ai:['Claude','Gemini'] },
-      { title:'Write tests for this function', text:'Write a comprehensive unit test suite for this function covering happy paths, edge cases, and failures. Use [FRAMEWORK]: [PASTE]', ai:['ChatGPT','Claude'] },
-      { title:'Debug a stack trace', text:'I\'m getting this error: [PASTE STACK TRACE]. Here\'s the relevant code: [PASTE]. Diagnose the likely cause and give me the fix.', ai:['ChatGPT','Claude','Gemini'] },
-      { title:'Design a clean API', text:'Design a RESTful API for [FEATURE]. Give me endpoints, request/response shapes, status codes, and auth considerations.', ai:['Claude','Gemini'] },
-    ]},
-    { id:'designers', label:'Designers', emoji:'🎨', prompts:[
-      { title:'Critique my design decisions', text:'Act as a senior product designer. Critique this design for [PRODUCT]: [DESCRIBE/PASTE]. Cover hierarchy, spacing, contrast, and accessibility.', ai:['Claude','ChatGPT'] },
-      { title:'Generate a color system', text:'Build a cohesive color palette for a [MOOD] [PRODUCT TYPE] brand. Give hex values for primary, accent, neutrals, and semantic states with usage notes.', ai:['ChatGPT','Gemini'] },
-      { title:'Microcopy that converts', text:'Write 5 variants of microcopy for this [BUTTON/EMPTY STATE/ERROR]: [CONTEXT]. Keep it clear, on-brand, and under 8 words each.', ai:['Claude','ChatGPT'] },
-      { title:'Turn a brief into a moodboard plan', text:'Here\'s a creative brief: [PASTE]. Outline a moodboard direction: tone, typography pairing, imagery style, and 3 reference vibes.', ai:['ChatGPT','Gemini'] },
-      { title:'Accessibility audit', text:'Review this UI description for WCAG issues: [PASTE]. List violations by severity with concrete fixes.', ai:['Claude'] },
-    ]},
-    { id:'hr', label:'HR & Recruiters', emoji:'🧑‍💼', prompts:[
-      { title:'Job description that attracts talent', text:'Write an inclusive, compelling job description for a [ROLE] at a [COMPANY TYPE]. Include responsibilities, must-haves, nice-to-haves, and a culture blurb.', ai:['ChatGPT','Claude'] },
-      { title:'Screen a resume fast', text:'Compare this resume against this job description and score fit 1-10 with reasons. Flag gaps and 3 interview questions to probe: [PASTE BOTH]', ai:['Claude','Gemini'] },
-      { title:'Structured interview kit', text:'Create a structured interview guide for a [ROLE]. Include 6 behavioral questions, what a strong answer looks like, and a scoring rubric.', ai:['ChatGPT','Claude'] },
-      { title:'Gentle rejection email', text:'Write a warm, respectful rejection email to a candidate who interviewed for [ROLE] but wasn\'t selected. Encourage future applications.', ai:['ChatGPT','Gemini'] },
-      { title:'Onboarding checklist', text:'Build a 30-60-90 day onboarding plan for a new [ROLE] including goals, key relationships, and check-in milestones.', ai:['Claude','Gemini'] },
-    ]},
-    { id:'founders', label:'Founders & CEOs', emoji:'🚀', prompts:[
-      { title:'Pitch deck narrative', text:'I\'m raising for [STARTUP doing X]. Draft a 10-slide pitch deck narrative: problem, solution, market, traction, business model, and the ask.', ai:['Claude','ChatGPT'] },
-      { title:'Investor update email', text:'Write a concise monthly investor update. Metrics: [PASTE]. Sections: TL;DR, wins, challenges, asks, and runway. Confident but honest tone.', ai:['ChatGPT','Claude'] },
-      { title:'Pressure-test my strategy', text:'Act as a skeptical board member. Pressure-test this strategy for [GOAL]: [PASTE]. Surface the 3 biggest risks and what would make you say no.', ai:['Claude','Gemini'] },
-      { title:'Positioning in one sentence', text:'Help me craft positioning for [PRODUCT]. Give me 5 one-sentence statements in the form "For [audience] who [need], [product] is the [category] that [benefit]."', ai:['ChatGPT','Claude'] },
-      { title:'Hiring scorecard', text:'I\'m hiring a [EXEC ROLE]. Define the outcomes this person must deliver in year one and the competencies to screen for.', ai:['Claude'] },
-    ]},
-    { id:'creators', label:'Content Creators', emoji:'🎬', prompts:[
-      { title:'30 days of content ideas', text:'Give me 30 content ideas for a [NICHE] creator on [PLATFORM]. Mix formats: hooks, tutorials, hot takes, and behind-the-scenes.', ai:['ChatGPT','Gemini'] },
-      { title:'Scroll-stopping hooks', text:'Write 10 scroll-stopping hooks for a video about [TOPIC]. Make them punchy, curiosity-driven, and under 12 words.', ai:['Claude','ChatGPT'] },
-      { title:'Repurpose one video into 5 posts', text:'Here\'s my video transcript: [PASTE]. Repurpose it into a thread, a LinkedIn post, an Instagram caption, a newsletter blurb, and a short script.', ai:['Claude','Gemini'] },
-      { title:'YouTube title + thumbnail text', text:'Generate 8 high-CTR YouTube titles and matching 3-word thumbnail text for a video about [TOPIC]. Avoid clickbait that misleads.', ai:['ChatGPT','Gemini'] },
-      { title:'Brand deal pitch', text:'Write a friendly outreach email pitching a collaboration to [BRAND] as a [NICHE] creator with [AUDIENCE SIZE]. Lead with value to them.', ai:['ChatGPT','Claude'] },
-    ]},
-    { id:'teachers', label:'Teachers', emoji:'📚', prompts:[
-      { title:'Lesson plan in minutes', text:'Create a 45-minute lesson plan on [TOPIC] for [GRADE]. Include objectives, a hook, activities, differentiation, and an exit ticket.', ai:['ChatGPT','Claude'] },
-      { title:'Differentiate for every learner', text:'Take this activity: [PASTE]. Give me 3 versions — support, on-level, and extension — so every student in my class is challenged appropriately.', ai:['Claude','Gemini'] },
-      { title:'Quiz + answer key', text:'Write a 10-question quiz on [TOPIC] for [GRADE] with a mix of multiple choice and short answer. Include an answer key with explanations.', ai:['ChatGPT','Gemini'] },
-      { title:'Parent update message', text:'Draft a warm, professional message to parents about [SITUATION]. Keep it clear, supportive, and action-oriented.', ai:['ChatGPT','Claude'] },
-      { title:'Make it fun: classroom game', text:'Turn this learning objective into an engaging classroom game for [GRADE]: [OBJECTIVE]. Explain setup, rules, and how to assess.', ai:['Claude','Gemini'] },
-    ]},
-    { id:'kids', label:'Kids', emoji:'🧒', prompts:[
-      { title:'Tell me a bedtime story', text:'Tell me a fun bedtime story about a [ANIMAL] who goes on an adventure to [PLACE]. Make it kind, a little silly, and end happily.', ai:['ChatGPT','Gemini'] },
-      { title:'Why is the sky blue?', text:'Explain why [EVERYDAY THING happens] in a way a 7-year-old would understand. Use a fun example and keep it short.', ai:['ChatGPT','Claude','Gemini'] },
-      { title:'Homework helper (not cheater)', text:'I\'m stuck on this homework problem: [PASTE]. Don\'t give me the answer — guide me with hints and questions until I figure it out myself.', ai:['Claude','ChatGPT'] },
-      { title:'Make up a silly riddle', text:'Make up 3 silly, kid-friendly riddles about [TOPIC]. Give me the riddles first, then the answers upside-down at the end.', ai:['Gemini','ChatGPT'] },
-      { title:'Draw with words', text:'Help me invent a brand-new make-believe creature. Describe what it looks like, where it lives, and its one magical power.', ai:['ChatGPT','Claude'] },
-    ]},
-  ];
+const aiColors={'ChatGPT':'#10A37F','Claude':'#D97757','Gemini':'#4285F4','Midjourney':'#9A7CFF','Nano Banana':'#F5C542','Ideogram':'#FF7AC6','DALL·E':'#19C37D','Sora':'#E5E7F0','Veo':'#5B9BFF','Runway':'#43E6B5','Kling':'#FF8A5B'};
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-  // ─────────────── RENDER ───────────────
-  const aiColors = {
-    'ChatGPT':'#10A37F', 'Claude':'#D97757', 'Gemini':'#4285F4',
-    'Midjourney':'#9A7CFF', 'Nano Banana':'#F5C542', 'Ideogram':'#FF7AC6', 'DALL·E':'#19C37D',
-    'Sora':'#E5E7F0', 'Veo':'#5B9BFF', 'Runway':'#43E6B5', 'Kling':'#FF8A5B'
-  };
-  const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function mulberry(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function artSVG(seedStr){
+  const uid=hashStr(seedStr).toString(36);
+  const r=mulberry(hashStr(seedStr));
+  const W=340,H=152;
+  let s=`<svg class="art" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">`;
+  s+=`<defs><radialGradient id="ga-${uid}" cx="50%" cy="50%" r="50%"><stop offset="0" class="gs1a"/><stop offset="1" class="gs0a"/></radialGradient><radialGradient id="gb-${uid}" cx="50%" cy="50%" r="50%"><stop offset="0" class="gs1b"/><stop offset="1" class="gs0b"/></radialGradient></defs>`;
+  s+=`<rect width="${W}" height="${H}" class="art-bg"/><g class="art-parallax">`;
+  for(let i=0;i<3;i++){const cx=(30+r()*(W-60)).toFixed(0),cy=(20+r()*(H-40)).toFixed(0),rad=(38+r()*42).toFixed(0);const g=r()<0.5?'ga':'gb';const dx=(r()*16-8).toFixed(1),dy=(r()*12-6).toFixed(1),dur=(7+r()*6).toFixed(1);s+=`<circle cx="${cx}" cy="${cy}" r="${rad}" fill="url(#${g}-${uid})" class="blob" style="--dx:${dx}px;--dy:${dy}px;animation-duration:${dur}s"/>`;}
+  const pts=[];const np=4+Math.floor(r()*3);
+  for(let i=0;i<np;i++)pts.push([(16+r()*(W-32)).toFixed(0),(16+r()*(H-32)).toFixed(0)]);
+  s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" class="art-line"/>`;
+  pts.forEach((p,i)=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="2.3" class="art-node" style="animation-delay:${(i*0.4).toFixed(1)}s"/>`);
+  const ns=16+Math.floor(r()*12);
+  for(let i=0;i<ns;i++){const cx=(r()*W).toFixed(0),cy=(r()*H).toFixed(0),rad=(0.5+r()*1.3).toFixed(1);s+=`<circle cx="${cx}" cy="${cy}" r="${rad}" class="star" style="animation-delay:${(r()*3).toFixed(1)}s"/>`;}
+  const mx=(W*0.5+(r()*90-45)).toFixed(0),my=(H*0.5+(r()*36-18)).toFixed(0),mr=(20+r()*12).toFixed(0);
+  s+=`<circle cx="${mx}" cy="${my}" r="${mr}" class="art-ring" style="transform-origin:${mx}px ${my}px"/>`;
+  const d=(mr*0.5).toFixed(0);
+  s+=`<rect x="${(mx-d).toFixed(0)}" y="${(my-d).toFixed(0)}" width="${d*2}" height="${d*2}" class="art-diamond" style="transform-origin:${mx}px ${my}px" transform="rotate(45 ${mx} ${my})"/>`;
+  s+=`</g></svg>`;return s;
+}
+function thumbInner(seedStr,emoji,label){return artSVG(seedStr)+`<span class="thumb-emoji">${emoji}</span>`+(label?`<span class="thumb-label">${esc(label)}</span>`:'');}
+function attachParallax(el){
+  el.addEventListener('pointermove',e=>{const g=el.querySelector('.art-parallax');if(!g)return;const rect=el.getBoundingClientRect();const nx=(e.clientX-rect.left)/rect.width-0.5;const ny=(e.clientY-rect.top)/rect.height-0.5;g.style.transform=`translate(${(-nx*12).toFixed(1)}px,${(-ny*9).toFixed(1)}px)`;});
+  el.addEventListener('pointerleave',()=>{const g=el.querySelector('.art-parallax');if(g)g.style.transform='';});
+}
+function cardHTML(p,role,idx){
+  const tags=p.ai.map(a=>`<span class="ai-tag" style="color:${aiColors[a]||'#9A9CB8'}">${a}</span>`).join('');
+  return `<article class="card" data-role-id="${role.id}" data-idx="${idx}" data-text="${esc((p.title+' '+p.text+' '+role.label+' '+p.ai.join(' ')).toLowerCase())}">
+<div class="card-thumb">${thumbInner(role.id+'-'+idx,role.emoji,p.title)}</div>
+<div class="card-top"><span class="badge"><span class="bdot"></span>${esc(role.label)}</span><button class="save" aria-label="Save"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button></div>
+<h3>${esc(p.title)}</h3>
+<div class="prompt-text">${esc(p.text)}</div>
+<div class="card-bottom"><div class="ai-tags">${tags}</div><button class="copy-btn" data-copy="${esc(p.text)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>Copy</button></div></article>`;}
+function rowHTML(role){
+  const cards=role.prompts.map((p,i)=>cardHTML(p,role,i)).join('');
+  return `<div class="row" data-role="${role.id}" id="role-${role.id}">
+<div class="row-head"><h2><span class="emoji">${role.emoji}</span>${esc(role.label)}${role.trending?'<span class="trend">🔥 Trending</span>':''}</h2><span class="count">${role.prompts.length} prompts</span><div class="arrows"><button data-dir="-1" aria-label="Scroll left"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button><button data-dir="1" aria-label="Scroll right"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button></div></div>
+<div class="track-mask"><div class="track">${cards}</div></div></div>`;}
 
-  // ─────────────── GENERATIVE INTERACTIVE ART ───────────────
-  function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
-  function mulberry(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const rowsContainer=document.getElementById('roleRows');
+rowsContainer.innerHTML=ROLES.map(rowHTML).join('');
+rowsContainer.querySelectorAll('.card-thumb').forEach(attachParallax);
 
-  function artSVG(seedStr){
-    const uid = hashStr(seedStr).toString(36);
-    const r = mulberry(hashStr(seedStr));
-    const W=340, H=152;
-    let s = `<svg class="art" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">`;
-    s += `<defs>
-      <radialGradient id="ga-${uid}" cx="50%" cy="50%" r="50%"><stop offset="0" class="gs1a"/><stop offset="1" class="gs0a"/></radialGradient>
-      <radialGradient id="gb-${uid}" cx="50%" cy="50%" r="50%"><stop offset="0" class="gs1b"/><stop offset="1" class="gs0b"/></radialGradient>
-    </defs>`;
-    s += `<rect width="${W}" height="${H}" class="art-bg"/><g class="art-parallax">`;
-    // soft orbs
-    for(let i=0;i<3;i++){
-      const cx=(30+r()*(W-60)).toFixed(0), cy=(20+r()*(H-40)).toFixed(0), rad=(38+r()*42).toFixed(0);
-      const g = r()<0.5?'ga':'gb';
-      const dx=(r()*16-8).toFixed(1), dy=(r()*12-6).toFixed(1), dur=(7+r()*6).toFixed(1);
-      s += `<circle cx="${cx}" cy="${cy}" r="${rad}" fill="url(#${g}-${uid})" class="blob" style="--dx:${dx}px;--dy:${dy}px;animation-duration:${dur}s"/>`;
-    }
-    // constellation
-    const pts=[]; const np=4+Math.floor(r()*3);
-    for(let i=0;i<np;i++) pts.push([(16+r()*(W-32)).toFixed(0),(16+r()*(H-32)).toFixed(0)]);
-    s += `<polyline points="${pts.map(p=>p.join(',')).join(' ')}" class="art-line"/>`;
-    pts.forEach((p,i)=> s += `<circle cx="${p[0]}" cy="${p[1]}" r="2.3" class="art-node" style="animation-delay:${(i*0.4).toFixed(1)}s"/>`);
-    // stars
-    const ns=16+Math.floor(r()*12);
-    for(let i=0;i<ns;i++){
-      const cx=(r()*W).toFixed(0), cy=(r()*H).toFixed(0), rad=(0.5+r()*1.3).toFixed(1);
-      s += `<circle cx="${cx}" cy="${cy}" r="${rad}" class="star" style="animation-delay:${(r()*3).toFixed(1)}s"/>`;
-    }
-    // rotating motif: dashed ring + diamond
-    const mx=(W*0.5+(r()*90-45)).toFixed(0), my=(H*0.5+(r()*36-18)).toFixed(0), mr=(20+r()*12).toFixed(0);
-    s += `<circle cx="${mx}" cy="${my}" r="${mr}" class="art-ring" style="transform-origin:${mx}px ${my}px"/>`;
-    const d=(mr*0.5).toFixed(0);
-    s += `<rect x="${(mx-d).toFixed(0)}" y="${(my-d).toFixed(0)}" width="${(d*2)}" height="${(d*2)}" class="art-diamond" style="transform-origin:${mx}px ${my}px" transform="rotate(45 ${mx} ${my})"/>`;
-    s += `</g></svg>`;
-    return s;
-  }
+const chips=document.getElementById('chips');
+chips.innerHTML=`<span class="chip active" data-role="all">All</span>`+ROLES.map(r=>`<span class="chip" data-role="${r.id}">${r.emoji} ${esc(r.label)}</span>`).join('');
 
-  function thumbInner(seedStr, emoji, label){
-    return artSVG(seedStr) +
-      `<span class="thumb-emoji">${emoji}</span>` +
-      (label ? `<span class="thumb-label">${esc(label)}</span>` : '');
-  }
+const THEMES=[
+  {id:'cinema',c1:'#E11D2A',c2:'#FF4242',label:'Cinema'},
+  {id:'aurora',c1:'#7C5CFF',c2:'#22D3EE',label:'Aurora'},
+  {id:'sunset',c1:'#FF5E7E',c2:'#FFB24D',label:'Sunset'},
+  {id:'emerald',c1:'#19D58E',c2:'#22D3EE',label:'Emerald'},
+  {id:'rose',c1:'#FF5EC4',c2:'#9A7CFF',label:'Rose'},
+  {id:'ocean',c1:'#3B82F6',c2:'#22D3EE',label:'Ocean'},
+];
+const themeSwitch=document.getElementById('themeSwitch');
+themeSwitch.innerHTML=THEMES.map(t=>`<button data-theme-id="${t.id}" title="${t.label}" aria-label="${t.label} theme"><span class="sw" style="background:linear-gradient(135deg,${t.c1},${t.c2})"></span></button>`).join('');
+function applyTheme(id){if(id==='aurora')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',id);themeSwitch.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.themeId===id));try{localStorage.setItem('pf-theme-v2',id);}catch(e){}}
+themeSwitch.addEventListener('click',e=>{const b=e.target.closest('button[data-theme-id]');if(b)applyTheme(b.dataset.themeId);});
+let savedTheme='cinema';try{savedTheme=localStorage.getItem('pf-theme-v2')||'cinema';}catch(e){}
+applyTheme(THEMES.some(t=>t.id===savedTheme)?savedTheme:'cinema');
 
-  // pointer parallax on a thumbnail element
-  function attachParallax(el){
-    el.addEventListener('pointermove', e => {
-      const g = el.querySelector('.art-parallax'); if(!g) return;
-      const rect = el.getBoundingClientRect();
-      const nx = (e.clientX-rect.left)/rect.width - 0.5;
-      const ny = (e.clientY-rect.top)/rect.height - 0.5;
-      g.style.transform = `translate(${(-nx*12).toFixed(1)}px, ${(-ny*9).toFixed(1)}px)`;
-    });
-    el.addEventListener('pointerleave', () => {
-      const g = el.querySelector('.art-parallax'); if(g) g.style.transform = '';
-    });
-  }
+function copyText(text){if(navigator.clipboard&&window.isSecureContext){return navigator.clipboard.writeText(text).catch(()=>fallbackCopy(text));}return Promise.resolve(fallbackCopy(text));}
+function fallbackCopy(text){const ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0;pointer-events:none;';document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,text.length);try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);}
 
-  function cardHTML(p, role, idx){
-    const roleLabel = role.label;
-    const tags = p.ai.map(a => `<span class="ai-tag" style="color:${aiColors[a]||'#9A9CB8'}">${a}</span>`).join('');
-    return `<article class="card" data-role-id="${role.id}" data-idx="${idx}" data-text="${esc((p.title+' '+p.text+' '+roleLabel+' '+p.ai.join(' ')).toLowerCase())}">
-      <div class="card-thumb">
-        ${thumbInner(role.id+'-'+idx, role.emoji, p.title)}
-      </div>
-      <div class="card-top">
-        <span class="badge"><span class="bdot"></span>${esc(roleLabel)}</span>
-        <button class="save" aria-label="Save" title="Save">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-        </button>
-      </div>
-      <h3>${esc(p.title)}</h3>
-      <div class="prompt-text">${esc(p.text)}</div>
-      <div class="card-bottom">
-        <div class="ai-tags">${tags}</div>
-        <button class="copy-btn" data-copy="${esc(p.text)}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-          Copy
-        </button>
-      </div>
-    </article>`;
-  }
+const toast=document.getElementById('toast');
+let toastTimer;
+function showToast(msg){toast.querySelector('span').textContent=msg||'Prompt copied to clipboard';toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2000);}
 
-  function rowHTML(role){
-    const cards = role.prompts.map((p,i) => cardHTML(p, role, i)).join('');
-    return `<div class="row" data-role="${role.id}" id="role-${role.id}">
-      <div class="row-head">
-        <h2><span class="emoji">${role.emoji}</span>${esc(role.label)}${role.trending ? '<span class="trend">🔥 Trending</span>' : ''}</h2>
-        <span class="count">${role.prompts.length} prompts</span>
-        <div class="arrows">
-          <button data-dir="-1" aria-label="Scroll left"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
-          <button data-dir="1" aria-label="Scroll right"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
-        </div>
-      </div>
-      <div class="track-mask"><div class="track">${cards}</div></div>
-    </div>`;
-  }
+rowsContainer.addEventListener('click',e=>{
+  const btn=e.target.closest('.copy-btn');
+  if(btn){e.stopPropagation();const text=btn.getAttribute('data-copy');copyText(text);btn.classList.add('done');btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg> Copied`;clearTimeout(btn._t);btn._t=setTimeout(()=>{btn.classList.remove('done');btn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy`;},1800);showToast('Prompt copied to clipboard');return;}
+  const save=e.target.closest('.save');
+  if(save){e.stopPropagation();save.style.color=save.style.color==='rgb(34, 211, 238)'?'':'rgb(34, 211, 238)';return;}
+  const card=e.target.closest('.card');
+  if(card){openModal(card);}
+});
 
-  const rowsContainer = document.getElementById('roleRows');
-  rowsContainer.innerHTML = ROLES.map(rowHTML).join('');
-  rowsContainer.querySelectorAll('.card-thumb').forEach(attachParallax);
+const modal=document.getElementById('modal');
+const mBadge=document.getElementById('mBadge');
+const mTrend=document.getElementById('mTrend');
+const mTitle=document.getElementById('mTitle');
+const mPrompt=document.getElementById('mPrompt');
+const mTags=document.getElementById('mTags');
+const mEdit=document.getElementById('mEdit');
+const mEditLabel=document.getElementById('mEditLabel');
+const mCopy=document.getElementById('mCopy');
+const mCopyLabel=document.getElementById('mCopyLabel');
+function autosize(){mPrompt.style.height='auto';mPrompt.style.height=mPrompt.scrollHeight+'px';}
+function setEditing(on){mPrompt.readOnly=!on;mPrompt.classList.toggle('editing',on);mEdit.classList.toggle('active',on);mEditLabel.textContent=on?'Done':'Edit';if(on){mPrompt.focus();const v=mPrompt.value;mPrompt.setSelectionRange(v.length,v.length);}}
+function openModal(card){
+  const role=ROLES.find(r=>r.id===card.dataset.roleId);if(!role)return;
+  const p=role.prompts[+card.dataset.idx];
+  mBadge.textContent=role.label;mTrend.hidden=!role.trending;mTitle.textContent=p.title;mPrompt.value=p.text;
+  mTags.innerHTML=p.ai.map(a=>`<span class="ai-tag" style="color:${aiColors[a]||'#9A9CB8'}">${a}</span>`).join('');
+  const mPrev=document.getElementById('mPreview');
+  mPrev.innerHTML=thumbInner(role.id+'-'+(+card.dataset.idx),role.emoji,null);
+  attachParallax(mPrev);setEditing(false);mCopy.classList.remove('done');mCopyLabel.textContent='Copy prompt';
+  modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+  requestAnimationFrame(autosize);
+}
+function closeModal(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';setEditing(false);setTimeout(()=>{if(!modal.classList.contains('open'))document.getElementById('mPreview').innerHTML='';},400);}
+mEdit.addEventListener('click',()=>setEditing(mPrompt.readOnly));
+mPrompt.addEventListener('input',autosize);
+mCopy.addEventListener('click',()=>{copyText(mPrompt.value);mCopy.classList.add('done');mCopyLabel.textContent='Copied!';showToast('Prompt copied to clipboard');clearTimeout(mCopy._t);mCopy._t=setTimeout(()=>{mCopy.classList.remove('done');mCopyLabel.textContent='Copy prompt';},1900);});
+document.getElementById('modalClose').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))closeModal();});
 
-  // chips
-  const chips = document.getElementById('chips');
-  chips.innerHTML = `<span class="chip active" data-role="all">All</span>` +
-    ROLES.map(r => `<span class="chip" data-role="${r.id}">${r.emoji} ${esc(r.label)}</span>`).join('');
+rowsContainer.addEventListener('click',e=>{const arrow=e.target.closest('.arrows button');if(!arrow)return;const track=arrow.closest('.row').querySelector('.track');track.scrollBy({left:Number(arrow.dataset.dir)*(track.clientWidth*0.8),behavior:'smooth'});});
+rowsContainer.addEventListener('pointermove',e=>{const card=e.target.closest('.card');if(!card)return;const r=card.getBoundingClientRect();card.style.setProperty('--mx',(e.clientX-r.left)+'px');card.style.setProperty('--my',(e.clientY-r.top)+'px');});
 
-  // ─────────────── THEME SWITCHER ───────────────
-  const THEMES = [
-    { id:'cinema',  c1:'#E11D2A', c2:'#FF4242', label:'Cinema' },
-    { id:'aurora',  c1:'#7C5CFF', c2:'#22D3EE', label:'Aurora' },
-    { id:'sunset',  c1:'#FF5E7E', c2:'#FFB24D', label:'Sunset' },
-    { id:'emerald', c1:'#19D58E', c2:'#22D3EE', label:'Emerald' },
-    { id:'rose',    c1:'#FF5EC4', c2:'#9A7CFF', label:'Rose' },
-    { id:'ocean',   c1:'#3B82F6', c2:'#22D3EE', label:'Ocean' },
-  ];
-  const themeSwitch = document.getElementById('themeSwitch');
-  themeSwitch.innerHTML = THEMES.map(t =>
-    `<button data-theme-id="${t.id}" title="${t.label}" aria-label="${t.label} theme"><span class="sw" style="background:linear-gradient(135deg,${t.c1},${t.c2})"></span></button>`
-  ).join('');
-
-  function applyTheme(id){
-    if(id === 'aurora') document.documentElement.removeAttribute('data-theme');
-    else document.documentElement.setAttribute('data-theme', id);
-    themeSwitch.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.themeId === id));
-    try { localStorage.setItem('pf-theme-v2', id); } catch(e){}
-  }
-  themeSwitch.addEventListener('click', e => {
-    const b = e.target.closest('button[data-theme-id]');
-    if(b) applyTheme(b.dataset.themeId);
+const searchEl=document.getElementById('search');
+let activeChip='all';
+function filterAll(){
+  const q=searchEl.value.trim().toLowerCase();
+  let anyVisible=false;
+  document.querySelectorAll('.row').forEach(row=>{
+    const roleMatch=activeChip==='all'||row.dataset.role===activeChip;
+    if(!roleMatch){row.style.display='none';return;}
+    const cards=row.querySelectorAll('.card');
+    let rowHasVisible=false;
+    cards.forEach(card=>{const match=!q||card.dataset.text.includes(q);card.style.display=match?'':'none';if(match)rowHasVisible=true;});
+    row.style.display=rowHasVisible?'':'none';
+    if(rowHasVisible)anyVisible=true;
   });
-  let savedTheme = 'cinema';
-  try { savedTheme = localStorage.getItem('pf-theme-v2') || 'cinema'; } catch(e){}
-  applyTheme(THEMES.some(t => t.id === savedTheme) ? savedTheme : 'cinema');
+  document.getElementById('noResults').style.display=anyVisible?'none':'block';
+}
+searchEl.addEventListener('input',filterAll);
+document.getElementById('chips').addEventListener('click',e=>{
+  const chip=e.target.closest('.chip');if(!chip)return;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');activeChip=chip.dataset.role;filterAll();
+  if(activeChip!=='all'){const target=document.getElementById('role-'+activeChip);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});}
+});
 
-  // ─────────────── INTERACTIONS ───────────────
-  // robust clipboard copy (works in sandboxed/insecure frames)
-  function copyText(text){
-    if(navigator.clipboard && window.isSecureContext){
-      return navigator.clipboard.writeText(text).catch(()=> fallbackCopy(text));
-    }
-    return Promise.resolve(fallbackCopy(text));
-  }
-  function fallbackCopy(text){
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly','');
-    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
-    document.body.appendChild(ta);
-    ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
-    try { document.execCommand('copy'); } catch(e) {}
-    document.body.removeChild(ta);
-  }
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>10),{passive:true});
 
-  // copy
-  const toast = document.getElementById('toast');
-  let toastTimer;
-  function showToast(msg){
-    toast.querySelector('span').textContent = msg || 'Prompt copied to clipboard';
-    toast.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=> toast.classList.remove('show'), 2000);
-  }
-  rowsContainer.addEventListener('click', e => {
-    const btn = e.target.closest('.copy-btn');
-    if(btn){
-      e.stopPropagation();
-      const text = btn.getAttribute('data-copy');
-      copyText(text);
-      btn.classList.add('done');
-      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg> Copied`;
-      clearTimeout(btn._t);
-      btn._t = setTimeout(()=>{ btn.classList.remove('done'); btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy`; }, 1800);
-      showToast('Prompt copied to clipboard');
-      return;
-    }
-    const save = e.target.closest('.save');
-    if(save){
-      e.stopPropagation();
-      save.style.color = save.style.color === 'rgb(34, 211, 238)' ? '' : 'rgb(34, 211, 238)';
-      return;
-    }
-    const card = e.target.closest('.card');
-    if(card){ openModal(card); }
-  });
-
-  // ─────────────── MODAL ───────────────
-  const modal = document.getElementById('modal');
-  const mBadge = document.getElementById('mBadge');
-  const mTrend = document.getElementById('mTrend');
-  const mTitle = document.getElementById('mTitle');
-  const mPrompt = document.getElementById('mPrompt');
-  const mTags = document.getElementById('mTags');
-  const mEdit = document.getElementById('mEdit');
-  const mEditLabel = document.getElementById('mEditLabel');
-  const mCopy = document.getElementById('mCopy');
-  const mCopyLabel = document.getElementById('mCopyLabel');
-
-  function autosize(){ mPrompt.style.height = 'auto'; mPrompt.style.height = mPrompt.scrollHeight + 'px'; }
-
-  function setEditing(on){
-    mPrompt.readOnly = !on;
-    mPrompt.classList.toggle('editing', on);
-    mEdit.classList.toggle('active', on);
-    mEditLabel.textContent = on ? 'Done' : 'Edit';
-    if(on){ mPrompt.focus(); const v = mPrompt.value; mPrompt.setSelectionRange(v.length, v.length); }
-  }
-
-  function openModal(card){
-    const role = ROLES.find(r => r.id === card.dataset.roleId);
-    if(!role) return;
-    const p = role.prompts[+card.dataset.idx];
-    mBadge.textContent = role.label;
-    mTrend.hidden = !role.trending;
-    mTitle.textContent = p.title;
-    mPrompt.value = p.text;
-    mTags.innerHTML = p.ai.map(a => `<span class="ai-tag" style="color:${aiColors[a]||'#9A9CB8'}">${a}</span>`).join('');
-    const mPrev = document.getElementById('mPreview');
-    mPrev.innerHTML = thumbInner(role.id+'-'+(+card.dataset.idx), role.emoji, null);
-    attachParallax(mPrev);
-    setEditing(false);
-    mCopy.classList.remove('done');
-    mCopyLabel.textContent = 'Copy prompt';
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    requestAnimationFrame(autosize);
-  }
-
-  function closeModal(){
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    setEditing(false);
-    setTimeout(()=>{ if(!modal.classList.contains('open')) document.getElementById('mPreview').innerHTML=''; }, 400);
-  }
-
-  mEdit.addEventListener('click', () => setEditing(mPrompt.readOnly));
-  mPrompt.addEventListener('input', autosize);
-  mCopy.addEventListener('click', () => {
-    copyText(mPrompt.value);
-    mCopy.classList.add('done');
-    mCopyLabel.textContent = 'Copied!';
-    showToast('Prompt copied to clipboard');
-    clearTimeout(mCopy._t);
-    mCopy._t = setTimeout(()=>{ mCopy.classList.remove('done'); mCopyLabel.textContent = 'Copy prompt'; }, 1900);
-  });
-  document.getElementById('modalClose').addEventListener('click', closeModal);
-  modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
-  document.addEventListener('keydown', e => { if(e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
-
-  // arrows
-  rowsContainer.addEventListener('click', e => {
-    const arrow = e.target.closest('.arrows button');
-    if(!arrow) return;
-    const track = arrow.closest('.row').querySelector('.track');
-    track.scrollBy({ left: Number(arrow.dataset.dir) * (track.clientWidth * 0.8), behavior:'smooth' });
-  });
-
-  // card glow follow
-  rowsContainer.addEventListener('pointermove', e => {
-    const card = e.target.closest('.card');
-    if(!card) return;
-    const r = card.getBoundingClientRect();
-    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
-  });
-
-  // search + chips filter
-  const search = document.getElementById('search');
-  const noResults = document.getElementById('noResults');
-  let activeRole = 'all';
-
-  function applyFilter(){
-    const q = search.value.trim().toLowerCase();
-    let anyVisible = false;
-    ROLES.forEach(role => {
-      const row = document.getElementById('role-'+role.id);
-      const roleMatch = activeRole === 'all' || activeRole === role.id;
-      let visibleCards = 0;
-      row.querySelectorAll('.card').forEach(card => {
-        const match = roleMatch && (!q || card.dataset.text.includes(q));
-        card.style.display = match ? '' : 'none';
-        if(match) visibleCards++;
-      });
-      row.style.display = visibleCards ? '' : 'none';
-      if(visibleCards) anyVisible = true;
-      const countEl = row.querySelector('.count');
-      if(countEl) countEl.textContent = visibleCards + ' prompt' + (visibleCards===1?'':'s');
-    });
-    noResults.style.display = anyVisible ? 'none' : 'block';
-  }
-
-  search.addEventListener('input', applyFilter);
-
-  chips.addEventListener('click', e => {
-    const chip = e.target.closest('.chip');
-    if(!chip) return;
-    chips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    activeRole = chip.dataset.role;
-    applyFilter();
-    if(activeRole !== 'all'){
-      document.getElementById('rows').scrollIntoView({behavior:'smooth', block:'start'});
-    }
-  });
-
-  // nav scroll state
-  const nav = document.getElementById('nav');
-  window.addEventListener('scroll', () => {
-    nav.classList.toggle('scrolled', window.scrollY > 12);
-  }, { passive:true });
-
-  // reveal on scroll
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(en => { if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal, .why-card, .card').forEach((el,i) => {
-    el.classList.add('reveal');
-    io.observe(el);
-  });
-  // stagger hero reveals immediately
-  document.querySelectorAll('header.hero .reveal').forEach((el,i)=>{
-    setTimeout(()=> el.classList.add('in'), 90*i + 80);
-  });
-  </script>
+const revealEls=document.querySelectorAll('.reveal');
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.15});
+revealEls.forEach(el=>io.observe(el));
+</script>
 </body>
 </html>
