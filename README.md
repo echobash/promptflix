@@ -8,6 +8,9 @@ A free, curated library of 300+ GenAI prompts — organized by role, not by chao
 
 ---
 
+<kbd><img width="1436" height="778" alt="Screenshot 2026-06-08 at 11 22 13 PM" src="https://github.com/user-attachments/assets/684aa9ea-db6e-4d69-9b73-51a845788356" /></kbd>
+
+
 ## What is this?
 
 Most prompt libraries are a giant unsorted dump. promptflix is different.
