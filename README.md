@@ -2,7 +2,7 @@
 
 > **The right prompt for the right person, instantly.**
 
-A free, curated library of 300+ GenAI prompts — organized by role, not by chaos. No signup. No paywall. No noise. Just copy and go.
+An opensource, curated library of 300+ GenAI prompts — organized by role, not by chaos. No signup. No paywall. No noise. Just copy and go.
 
 🌐 **[promptflix.in](https://promptflix.in)**
 
