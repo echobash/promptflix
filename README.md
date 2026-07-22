@@ -90,12 +90,6 @@ Want to add a prompt? Found a dead link? Open an issue or PR.
 2. Include: **title**, **category**, **the prompt text** (with `[BRACKETS]` for variables), and **which AI tools it works with**
 3. Keep it practical — prompts that get real results, not demo-ware
 
-### Guidelines
-
-- Use `[BRACKETS]` for anything the user should replace
-- Write for the role — a developer prompt reads differently than a teacher prompt
-- No jailbreaks, no harmful prompts, no made-up AI tool names
-- If it wouldn't survive a "does this actually work?" test, it doesn't belong here
 
 ---
 
